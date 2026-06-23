@@ -1,0 +1,56 @@
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+import type { Language } from './supabase'
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+export const LANGUAGE_LABELS: Record<Language, string> = {
+  vi: '🇻🇳 VI',
+  jp: '🇯🇵 JP',
+  en: '🇬🇧 EN',
+  np: '🇳🇵 NP',
+}
+
+export const LANGUAGE_FULL_LABELS: Record<Language, string> = {
+  vi: '🇻🇳 Tiếng Việt',
+  jp: '🇯🇵 日本語',
+  en: '🇬🇧 English',
+  np: '🇳🇵 नेपाली',
+}
+
+// Tự động detect ngôn ngữ từ trình duyệt
+export function detectBrowserLanguage(): Language {
+  const lang = navigator.language?.toLowerCase() || ''
+  if (lang.startsWith('ja')) return 'jp'
+  if (lang.startsWith('ne')) return 'np'
+  if (lang.startsWith('en')) return 'en'
+  return 'vi' // default
+}
+
+export const NO_INFO_MESSAGE: Record<Language, string> = {
+  vi: 'Xin lỗi, tôi chưa có thông tin về câu hỏi này. Vui lòng liên hệ người phụ trách để được hỗ trợ.',
+  jp: '申し訳ありませんが、この質問に関する情報がまだありません。担当者にお問い合わせください。',
+  en: "Sorry, I don't have information about this question yet. Please contact the person in charge for assistance.",
+  np: 'माफ गर्नुहोस्, मसँग यस प्रश्नको बारेमा जानकारी छैन। सहायताको लागि सम्बन्धित व्यक्तिलाई सम्पर्क गर्नुहोस्।',
+}
+
+export const PRIVATE_INFO_TOPICS = [
+  'lương cá nhân', 'hợp đồng cá nhân', 'visa cá nhân', 'thông tin cá nhân',
+  '個人の給与', '個人の契約', '個人のビザ',
+  'personal salary', 'personal contract', 'personal visa',
+  'व्यक्तिगत तलब', 'व्यक्तिगत सम्झौता',
+]
+
+export const PRIVATE_INFO_RESPONSE: Record<Language, string> = {
+  vi: 'Vui lòng liên hệ người phụ trách để được hỗ trợ về thông tin cá nhân.',
+  jp: '個人情報については、担当者にお問い合わせください。',
+  en: 'Please contact the person in charge for assistance with personal information.',
+  np: 'व्यक्तिगत जानकारीको लागि कृपया सम्बन्धित व्यक्तिलाई सम्पर्क गर्नुहोस्।',
+}
+
+export function isPrivateInfoQuery(question: string): boolean {
+  const q = question.toLowerCase()
+  return PRIVATE_INFO_TOPICS.some(topic => q.includes(topic.toLowerCase()))
+}
