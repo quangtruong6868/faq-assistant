@@ -86,14 +86,27 @@ export async function extractXlsxChunks(file: File): Promise<string[]> {
         const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', blankrows: false })
         if (!rows || rows.length < 2) continue
         const headers = rows[0].map((h: any) => String(h ?? '').trim())
+        // Detect Q&A columns (Vietnamese or Japanese headers)
+        const qIdx = headers.findIndex(h => /cau.hoi|question|質問|câu hỏi/i.test(h))
+        const aIdx = headers.findIndex(h => /tra.loi|answer|回答|trả lời/i.test(h))
+
         for (let i = 1; i < Math.min(rows.length, 500); i++) {
           const row = rows[i]
           if (!Array.isArray(row)) continue
-          const parts = headers.map((h, j) => {
-            const val = String(row[j] ?? '').replace(/[\n\r]/g, ' ').trim()
-            return val ? `${h}: ${val}` : ''
-          }).filter(Boolean)
-          const chunk = parts.join('\n')
+          let chunk: string
+          if (qIdx >= 0 && aIdx >= 0) {
+            // Q&A format: clear Japanese labels
+            const q = String(row[qIdx] ?? '').replace(/[\n\r]/g, ' ').trim()
+            const a = String(row[aIdx] ?? '').replace(/[\n\r]/g, ' ').trim()
+            if (!q && !a) continue
+            chunk = `質問: ${q}\n回答: ${a}`
+          } else {
+            const parts = headers.map((h, j) => {
+              const val = String(row[j] ?? '').replace(/[\n\r]/g, ' ').trim()
+              return val ? `${h}: ${val}` : ''
+            }).filter(Boolean)
+            chunk = parts.join('\n')
+          }
           if (chunk.length > 10) chunks.push(chunk)
         }
       } catch (e) {
