@@ -122,10 +122,11 @@ export async function reEmbedDocument(doc: { id: string; file_path: string; file
 
   if (chunks.length === 0) throw new Error('Không extract được text từ file này')
 
-  const { error: fnError } = await supabase.functions.invoke('embed-document', {
+  supabase.functions.invoke('embed-document', {
     body: { document_id: doc.id, chunks, flow },
+  }).then(({ error }) => {
+    if (error) console.error('[retry] embed-document error:', error)
   })
-  if (fnError) throw new Error('embed-document lỗi: ' + fnError.message)
 }
 
 export function useDocuments() {
@@ -171,11 +172,12 @@ export function useDocuments() {
     const text = await extractTextClientSide(file, ext)
     const chunks = chunkText(text)
 
-    // Send pre-chunked text to edge function — only calls OpenAI embed + DB insert
-    const { error: fnError } = await supabase.functions.invoke('embed-document', {
+    // Fire-and-forget: edge function runs in background, UI unblocks immediately
+    supabase.functions.invoke('embed-document', {
       body: { document_id: docId, chunks, flow },
+    }).then(({ error }) => {
+      if (error) console.error('[upload] embed-document error:', error)
     })
-    if (fnError) console.error('[upload] embed-document error:', fnError)
 
     await fetch()
     return null
