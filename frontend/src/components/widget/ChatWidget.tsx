@@ -23,7 +23,7 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
     selectFlow, selectCategory, goToChat, goBack, setLanguage,
   } = useWidget(siteKey)
 
-  const { messages, isLoading, sendMessage } = useChat(language)
+  const { messages, isLoading, sendMessage } = useChat(language, 'internal')
   const { categories, loading: catsLoading } = useCategories()
   const { items: faqItems, loading: faqLoading } = useFaqByCategory(
     selectedCategory?.id || null,
@@ -50,6 +50,7 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
     ? `${selectedCategory.icon || ''} ${getCategoryName(selectedCategory, language)}`
     : 'TH-GROUP'
 
+  // corporate & candidate flows have their own WidgetInput inside the component
   const showInput = view === 'chat' || view === 'internal_home' || view === 'internal_category'
   const showBack = view !== 'selector'
 

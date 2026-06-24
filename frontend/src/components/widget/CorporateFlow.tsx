@@ -1,212 +1,189 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Language, CompanyLead } from '../../lib/supabase'
+import { useChat } from '../../hooks/useChat'
 import { useLeads } from '../../hooks/useLeads'
+import { WidgetInput } from './WidgetInput'
 
 interface Props {
   language: Language
   siteKey: string
 }
 
-const QUICK_BUTTONS = [
-  { key: 'hiring', jp: '外国人材を採用したい', vi: 'Muốn tuyển nhân lực nước ngoài', en: 'Hire foreign workers' },
-  { key: 'shortage', jp: '人手不足で困っている', vi: 'Đang thiếu nhân lực', en: 'Facing labor shortage' },
-  { key: 'haken', jp: '派遣を検討している', vi: 'Đang cân nhắc phái cử', en: 'Considering staffing' },
-  { key: 'shokai', jp: '紹介を検討している', vi: 'Đang cân nhắc giới thiệu', en: 'Considering placement' },
-  { key: 'gijinkoku', jp: '技人国人材について知りたい', vi: 'Muốn biết về Gijinkoku', en: 'About Gijin-koku visa' },
-  { key: 'tokutei', jp: '特定技能について知りたい', vi: 'Muốn biết về Tokutei Ginou', en: 'About Tokutei Ginou' },
-  { key: 'vietnam', jp: 'ベトナム人材について知りたい', vi: 'Hỏi về nhân lực Việt Nam', en: 'About Vietnamese workers' },
-  { key: 'cost', jp: '費用を知りたい', vi: 'Muốn biết chi phí', en: 'About costs' },
-  { key: 'consult', jp: 'まずは相談したい', vi: 'Muốn tư vấn trước', en: 'General consultation' },
-]
+const WELCOME: Record<Language, string> = {
+  jp: 'はじめまして！TH-GROUPの人材コンサルタントです。\n外国人材の採用・派遣・紹介についてなんでもご相談ください。\n\nどのようなことでお困りですか？',
+  vi: 'Xin chào! Tôi là tư vấn viên nhân lực của TH-GROUP.\nMọi thắc mắc về tuyển dụng, phái cử, visa nhân lực nước ngoài — cứ hỏi tôi nhé!\n\nBạn đang cần tư vấn về vấn đề gì?',
+  en: 'Hello! I\'m a recruitment consultant from TH-GROUP.\nFeel free to ask me anything about hiring foreign workers, staffing, or visas!\n\nWhat can I help you with?',
+  np: 'नमस्ते! म TH-GROUP को मानव संसाधन सल्लाहकार हुँ।\nविदेशी कार्यकर्ता भर्ती बारे जे पनि सोध्नुहोस्!\n\nम कसरी मद्दत गर्न सक्छु?',
+}
+
+const QUICK_TOPICS: Record<Language, string[]> = {
+  jp: ['外国人採用の流れを知りたい', 'ビザの種類と違いは？', '費用はどのくらい？', 'どんな職種に対応？', '採用までの期間は？'],
+  vi: ['Quy trình tuyển dụng ngoại lao động', 'Phân biệt các loại visa', 'Chi phí khoảng bao nhiêu?', 'Ngành nghề nào phù hợp?', 'Mất bao lâu để có người?'],
+  en: ['How does the hiring process work?', 'What visa types are available?', 'What are the costs?', 'What industries do you cover?', 'How long does it take?'],
+  np: ['भर्ती प्रक्रिया कस्तो छ?', 'भिसाका प्रकारहरू', 'खर्च कति हुन्छ?', 'कुन उद्योगहरू?'],
+}
+
+const CONTACT_BTN: Record<Language, string> = {
+  jp: '📞 担当者に直接相談する',
+  vi: '📞 Để lại thông tin để được tư vấn trực tiếp',
+  en: '📞 Leave contact info for a direct consultation',
+  np: '📞 सम्पर्क जानकारी छाड्नुहोस्',
+}
 
 const FORM_LABELS: Record<Language, Record<string, string>> = {
-  jp: {
-    title: 'お問い合わせフォーム',
-    sub: '担当者よりご連絡いたします',
-    company: '会社名 *',
-    contact: '担当者名 *',
-    phone: '電話番号 *',
-    email: 'メールアドレス',
-    facebook: 'Facebook',
-    location: '所在地（都道府県）',
-    job_type: '募集職種',
-    headcount: '必要人数',
-    timing: '希望時期',
-    content: '相談内容・ご質問',
-    submit: '送信する',
-    sending: '送信中...',
-  },
-  vi: {
-    title: 'Form liên hệ',
-    sub: 'Chúng tôi sẽ liên hệ lại với bạn sớm',
-    company: 'Tên công ty *',
-    contact: 'Người liên hệ *',
-    phone: 'Số điện thoại *',
-    email: 'Email',
-    facebook: 'Facebook',
-    location: 'Tỉnh/Thành phố',
-    job_type: 'Ngành nghề cần tuyển',
-    headcount: 'Số lượng cần tuyển',
-    timing: 'Thời gian mong muốn',
-    content: 'Nội dung tư vấn',
-    submit: 'Gửi',
-    sending: 'Đang gửi...',
-  },
-  en: {
-    title: 'Contact Form',
-    sub: 'Our team will get back to you shortly',
-    company: 'Company Name *',
-    contact: 'Contact Person *',
-    phone: 'Phone Number *',
-    email: 'Email',
-    facebook: 'Facebook',
-    location: 'Prefecture/Location',
-    job_type: 'Job Type Needed',
-    headcount: 'Number of Workers',
-    timing: 'Desired Timeline',
-    content: 'Inquiry Details',
-    submit: 'Submit',
-    sending: 'Sending...',
-  },
-  np: {
-    title: 'सम्पर्क फारम',
-    sub: 'हाम्रो टोली तपाईंलाई सम्पर्क गर्नेछ',
-    company: 'कम्पनी नाम *',
-    contact: 'सम्पर्क व्यक्ति *',
-    phone: 'फोन नम्बर *',
-    email: 'इमेल',
-    facebook: 'Facebook',
-    location: 'स्थान',
-    job_type: 'काम को प्रकार',
-    headcount: 'आवश्यक संख्या',
-    timing: 'इच्छित समय',
-    content: 'सोधपुछको विवरण',
-    submit: 'पठाउनुहोस्',
-    sending: 'पठाउँदै...',
-  },
+  jp: { title: '担当者よりご連絡します', company: '会社名 *', contact: '担当者名 *', phone: '電話番号 *', email: 'メール', facebook: 'Facebook', submit: '送信する', sending: '送信中...' },
+  vi: { title: 'Chúng tôi sẽ liên hệ lại', company: 'Tên công ty *', contact: 'Người liên hệ *', phone: 'Số điện thoại *', email: 'Email', facebook: 'Facebook', submit: 'Gửi', sending: 'Đang gửi...' },
+  en: { title: 'We\'ll get back to you', company: 'Company Name *', contact: 'Contact Person *', phone: 'Phone *', email: 'Email', facebook: 'Facebook', submit: 'Submit', sending: 'Sending...' },
+  np: { title: 'हामी सम्पर्क गर्नेछौं', company: 'कम्पनी नाम *', contact: 'सम्पर्क व्यक्ति *', phone: 'फोन *', email: 'इमेल', facebook: 'Facebook', submit: 'पठाउनुहोस्', sending: 'पठाउँदै...' },
 }
 
-const THANK_YOU: Record<Language, { title: string; sub: string }> = {
-  jp: { title: 'お問い合わせありがとうございます', sub: '担当者より2営業日以内にご連絡いたします。' },
-  vi: { title: 'Cảm ơn bạn đã liên hệ!', sub: 'Chúng tôi sẽ liên hệ lại trong vòng 2 ngày làm việc.' },
-  en: { title: 'Thank you for your inquiry!', sub: 'Our team will contact you within 2 business days.' },
-  np: { title: 'सोधपुछको लागि धन्यवाद!', sub: 'हाम्रो टोली २ कार्य दिनभित्र सम्पर्क गर्नेछ।' },
-}
-
-const QUICK_LABEL: Record<Language, string> = {
-  jp: 'ご相談内容をお選びください:',
-  vi: 'Chọn nội dung tư vấn:',
-  en: 'Select your inquiry:',
-  np: 'आफ्नो सोधपुछ छान्नुहोस्:',
+const THANK_YOU: Record<Language, string> = {
+  jp: 'ありがとうございます！2営業日以内にご連絡いたします。',
+  vi: 'Cảm ơn! Chúng tôi sẽ liên hệ trong 2 ngày làm việc.',
+  en: 'Thank you! We\'ll contact you within 2 business days.',
+  np: 'धन्यवाद! हामी २ कार्य दिनभित्र सम्पर्क गर्नेछौं।',
 }
 
 export function CorporateFlow({ language, siteKey }: Props) {
-  const [step, setStep] = useState<'quick' | 'form'>('quick')
-  const [form, setForm] = useState<CompanyLead>({})
+  const { messages, isLoading, sendMessage } = useChat(language, 'corporate')
   const { submitting, submitted, error, submitCompanyLead } = useLeads(siteKey)
+  const [showForm, setShowForm] = useState(false)
+  const [form, setForm] = useState<CompanyLead>({})
+  const [started, setStarted] = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   const l = FORM_LABELS[language] || FORM_LABELS.jp
-  const ty = THANK_YOU[language] || THANK_YOU.jp
 
-  const handleQuickSelect = (key: string) => {
-    setForm(f => ({ ...f, inquiry_type: key, language }))
-    setStep('form')
-  }
+  // Show welcome message
+  useEffect(() => {
+    if (!started) setStarted(true)
+  }, [])
 
-  const handleSubmit = async () => {
-    if (!form.company_name || !form.contact_name || !form.phone) return
-    await submitCompanyLead(form)
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, showForm])
+
+  const handleQuick = (topic: string) => {
+    sendMessage(topic)
   }
 
   const set = (key: keyof CompanyLead, val: string) => setForm(f => ({ ...f, [key]: val }))
 
-  if (submitted) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 p-8 text-center min-h-[300px]">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-3xl">✅</div>
-        <div>
-          <p className="font-semibold text-gray-900">{ty.title}</p>
-          <p className="text-sm text-gray-500 mt-1">{ty.sub}</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (step === 'quick') {
-    return (
-      <div className="flex flex-col gap-3 p-4">
-        <div className="flex gap-2.5">
-          <div className="w-8 h-8 rounded-full overflow-hidden bg-white border border-gray-100 flex-shrink-0 mt-0.5">
-            <img src="/th-logo.jpg" alt="TH-GROUP" className="w-full h-full object-contain" />
-          </div>
-          <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]">
-            <p className="text-sm text-gray-800">🏢 {QUICK_LABEL[language]}</p>
-          </div>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          {QUICK_BUTTONS.map(btn => {
-            const label = language === 'vi' ? btn.vi : language === 'en' ? btn.en : btn.jp
-            return (
-              <button key={btn.key} onClick={() => handleQuickSelect(btn.key)}
-                className="text-left px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 hover:border-red-400 hover:bg-red-50 hover:text-red-700 transition-all active:scale-[0.98]">
-                {label}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-    )
+  const handleSubmit = async () => {
+    if (!form.company_name || !form.contact_name || !form.phone) return
+    // Include chat summary in inquiry
+    const chatSummary = messages.slice(0, 6).map(m => `${m.role === 'user' ? 'Q' : 'A'}: ${m.content}`).join('\n')
+    await submitCompanyLead({ ...form, inquiry_content: chatSummary, language })
   }
 
   return (
-    <div className="p-4 space-y-3">
-      <div className="text-center mb-2">
-        <p className="text-sm font-semibold text-gray-800">{l.title}</p>
-        <p className="text-xs text-gray-400">{l.sub}</p>
-      </div>
-
-      {[
-        { key: 'company_name', label: l.company, placeholder: '例：株式会社〇〇' },
-        { key: 'contact_name', label: l.contact, placeholder: '例：田中 太郎' },
-        { key: 'phone', label: l.phone, placeholder: '例：03-0000-0000' },
-        { key: 'email', label: l.email, placeholder: 'example@company.jp' },
-        { key: 'facebook', label: l.facebook, placeholder: 'facebook.com/... hoặc tên Facebook' },
-        { key: 'location', label: l.location, placeholder: '例：東京都' },
-        { key: 'job_type', label: l.job_type, placeholder: '例：製造、介護、IT' },
-        { key: 'headcount', label: l.headcount, placeholder: '例：3名' },
-        { key: 'desired_timing', label: l.timing, placeholder: '例：3ヶ月以内' },
-      ].map(field => (
-        <div key={field.key}>
-          <label className="block text-xs font-medium text-gray-600 mb-1">{field.label}</label>
-          <input
-            value={(form as any)[field.key] || ''}
-            onChange={e => set(field.key as keyof CompanyLead, e.target.value)}
-            placeholder={field.placeholder}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
-          />
+    <div className="flex flex-col h-full">
+      {/* Chat area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {/* Welcome bubble */}
+        <div className="flex gap-2.5">
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-white border border-gray-100 flex-shrink-0 mt-0.5">
+            <img src="/th-logo.jpg" alt="TH" className="w-full h-full object-contain" />
+          </div>
+          <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]">
+            <p className="text-sm text-gray-800 whitespace-pre-line">{WELCOME[language]}</p>
+          </div>
         </div>
-      ))}
 
-      <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">{l.content}</label>
-        <textarea
-          value={form.inquiry_content || ''}
-          onChange={e => set('inquiry_content', e.target.value)}
-          rows={3}
-          placeholder="ご自由にご記入ください"
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 resize-none"
-        />
+        {/* Quick topics — only before first message */}
+        {messages.length === 0 && (
+          <div className="flex flex-col gap-1.5 pl-10">
+            {(QUICK_TOPICS[language] || QUICK_TOPICS.jp).map(t => (
+              <button key={t} onClick={() => handleQuick(t)}
+                className="text-left px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-600 hover:border-red-400 hover:bg-red-50 hover:text-red-700 transition-all active:scale-[0.98]">
+                {t}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Chat messages */}
+        {messages.map(msg => (
+          <div key={msg.id} className={`flex gap-2.5 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+            {msg.role === 'assistant' && (
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-white border border-gray-100 flex-shrink-0 mt-0.5">
+                <img src="/th-logo.jpg" alt="TH" className="w-full h-full object-contain" />
+              </div>
+            )}
+            <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-line leading-relaxed ${
+              msg.role === 'user'
+                ? 'bg-red-600 text-white rounded-tr-sm'
+                : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-sm'
+            }`}>
+              {msg.content}
+            </div>
+          </div>
+        ))}
+
+        {/* Typing indicator */}
+        {isLoading && (
+          <div className="flex gap-2.5">
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-white border border-gray-100 flex-shrink-0">
+              <img src="/th-logo.jpg" alt="TH" className="w-full h-full object-contain" />
+            </div>
+            <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-tl-sm px-4 py-3">
+              <div className="flex gap-1 items-center h-4">
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Contact form button — show after 2 messages */}
+        {messages.length >= 2 && !showForm && !submitted && (
+          <div className="pl-10">
+            <button onClick={() => setShowForm(true)}
+              className="text-xs px-4 py-2 bg-red-50 border border-red-200 text-red-700 rounded-xl hover:bg-red-100 transition-colors">
+              {CONTACT_BTN[language]}
+            </button>
+          </div>
+        )}
+
+        {/* Inline contact form */}
+        {showForm && !submitted && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-4 space-y-2.5 mx-0">
+            <p className="text-xs font-semibold text-gray-700">{l.title}</p>
+            {([
+              { key: 'company_name', label: l.company, placeholder: '株式会社〇〇 / Công ty...' },
+              { key: 'contact_name', label: l.contact, placeholder: '田中 太郎 / Nguyễn Văn A' },
+              { key: 'phone', label: l.phone, placeholder: '090-0000-0000' },
+              { key: 'email', label: l.email, placeholder: 'email@company.com' },
+              { key: 'facebook', label: l.facebook, placeholder: 'facebook.com/...' },
+            ] as const).map(f => (
+              <div key={f.key}>
+                <label className="block text-xs text-gray-500 mb-0.5">{f.label}</label>
+                <input value={(form as any)[f.key] || ''} onChange={e => set(f.key as keyof CompanyLead, e.target.value)}
+                  placeholder={f.placeholder}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
+              </div>
+            ))}
+            {error && <p className="text-xs text-red-500">{error}</p>}
+            <button onClick={handleSubmit}
+              disabled={submitting || !form.company_name || !form.contact_name || !form.phone}
+              className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-xl py-2 text-sm font-semibold transition-colors">
+              {submitting ? l.sending : l.submit}
+            </button>
+          </div>
+        )}
+
+        {submitted && (
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-center">
+            <p className="text-sm text-green-700 font-medium">✅ {THANK_YOU[language]}</p>
+          </div>
+        )}
+
+        <div ref={bottomRef} />
       </div>
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
-
-      <button
-        onClick={handleSubmit}
-        disabled={submitting || !form.company_name || !form.contact_name || !form.phone}
-        className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-xl py-3 text-sm font-semibold transition-colors"
-      >
-        {submitting ? l.sending : l.submit}
-      </button>
+      {/* Input */}
+      <WidgetInput language={language} isLoading={isLoading} onSend={sendMessage} />
     </div>
   )
 }

@@ -1,21 +1,16 @@
 import { useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import type { ChatMessage, Language } from '../lib/supabase'
+import type { ChatMessage, Language, FlowType } from '../lib/supabase'
 import { NO_INFO_MESSAGE, PRIVATE_INFO_RESPONSE, isPrivateInfoQuery } from '../lib/utils'
 
 const SESSION_ID = crypto.randomUUID()
 
-// language is controlled externally by the widget
-export function useChat(language: Language) {
+export function useChat(language: Language, flow: FlowType = 'internal') {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   const addMessage = useCallback((msg: Omit<ChatMessage, 'id' | 'timestamp'>) => {
-    const newMsg: ChatMessage = {
-      ...msg,
-      id: crypto.randomUUID(),
-      timestamp: new Date(),
-    }
+    const newMsg: ChatMessage = { ...msg, id: crypto.randomUUID(), timestamp: new Date() }
     setMessages(prev => [...prev, newMsg])
     return newMsg
   }, [])
@@ -29,12 +24,14 @@ export function useChat(language: Language) {
     try {
       if (isPrivateInfoQuery(question)) {
         addMessage({ role: 'assistant', content: PRIVATE_INFO_RESPONSE[language], language })
-        await logChat(question, PRIVATE_INFO_RESPONSE[language], language, 'blocked')
         return
       }
 
+      // Build history for context (last 6 turns max)
+      const history = messages.slice(-6).map(m => ({ role: m.role, content: m.content }))
+
       const { data, error } = await supabase.functions.invoke('chat', {
-        body: { question, language, session_id: SESSION_ID },
+        body: { question, language, session_id: SESSION_ID, flow, history },
       })
 
       if (error) throw error
@@ -52,15 +49,10 @@ export function useChat(language: Language) {
     } finally {
       setIsLoading(false)
     }
-  }, [addMessage, isLoading, language])
+  }, [addMessage, isLoading, language, flow, messages])
 
-  return { messages, isLoading, sendMessage }
+  const clearMessages = useCallback(() => setMessages([]), [])
+
+  return { messages, isLoading, sendMessage, clearMessages }
 }
 
-async function logChat(question: string, answer: string, language: Language, source: string) {
-  try {
-    await supabase.from('chat_logs').insert({ session_id: SESSION_ID, question, answer, language, source })
-  } catch {
-    // non-critical
-  }
-}
