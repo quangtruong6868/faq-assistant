@@ -153,7 +153,7 @@ export function useDocuments() {
     const docId = crypto.randomUUID()
     const path = `documents/${Date.now()}_${safeName}.${ext}`
 
-    // Upload original file to storage
+    // Phase 1: upload to storage (spinner shows during this)
     const { error: storageError } = await supabase.storage.from('documents').upload(path, file)
     if (storageError) return storageError
 
@@ -168,16 +168,18 @@ export function useDocuments() {
     })
     if (dbError) return dbError
 
-    // Extract text & chunk CLIENT-SIDE (avoids server OOM)
-    const text = await extractTextClientSide(file, ext)
-    const chunks = chunkText(text)
-
-    // Fire-and-forget: edge function runs in background, UI unblocks immediately
-    supabase.functions.invoke('embed-document', {
-      body: { document_id: docId, chunks, flow },
-    }).then(({ error }) => {
-      if (error) console.error('[upload] embed-document error:', error)
-    })
+    // Phase 2: parse + embed runs fully in background, UI unblocks immediately
+    setTimeout(async () => {
+      try {
+        const text = await extractTextClientSide(file, ext)
+        const chunks = chunkText(text)
+        await supabase.functions.invoke('embed-document', {
+          body: { document_id: docId, chunks, flow },
+        })
+      } catch (e) {
+        console.error('[upload] background embed error:', e)
+      }
+    }, 0)
 
     await fetch()
     return null
