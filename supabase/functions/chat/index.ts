@@ -80,11 +80,16 @@ serve(async (req) => {
     })
     const embedding = embeddingRes.data[0].embedding
 
-    const { data: chunks } = await supabase.rpc('match_document_chunks', {
+    // Get more chunks then filter by flow so docs don't bleed across flows
+    const { data: allChunks } = await supabase.rpc('match_document_chunks', {
       query_embedding: embedding,
       match_threshold: 0.60,
-      match_count: 3,         // top 3 is enough, more = more tokens
+      match_count: 8,
     })
+    // Prefer chunks matching this flow; fall back to untagged (legacy docs)
+    const chunks = (allChunks || [])
+      .filter((c: any) => !c.flow || c.flow === flow)
+      .slice(0, 3)
 
     // Build FAQ context if any (for corporate/candidate flows)
     let faqContext = ''

@@ -81,7 +81,7 @@ export function useDocuments() {
 
   useEffect(() => { fetch() }, [fetch])
 
-  const upload = useCallback(async (file: File) => {
+  const upload = useCallback(async (file: File, flow = 'internal') => {
     const ext = file.name.split('.').pop()
     const path = `documents/${Date.now()}_${file.name}`
 
@@ -93,6 +93,7 @@ export function useDocuments() {
       file_name: file.name,
       file_path: path,
       file_type: ext,
+      flow,
       status: 'pending',
     })
     if (dbError) return dbError

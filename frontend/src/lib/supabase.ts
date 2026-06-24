@@ -41,7 +41,9 @@ export interface Document {
   file_name: string
   file_path: string
   file_type: string
+  flow: 'internal' | 'corporate' | 'candidate'
   status: 'pending' | 'processing' | 'ready' | 'error'
+  chunk_count?: number
   created_at: string
 }
 
