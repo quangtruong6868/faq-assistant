@@ -110,7 +110,7 @@ serve(async (req) => {
 
     const { data: allChunks } = await supabase.rpc('match_document_chunks', {
       query_embedding: embedding,
-      match_threshold: 0.60,
+      match_threshold: 0.45,
       match_count: 8,
     })
 
