@@ -54,10 +54,7 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
 
       {isOpen && !isMinimized && (
         <>
-          <div className={`
-            fixed z-50 flex flex-col bg-gray-50 shadow-2xl overflow-hidden
-            bottom-6 right-6 w-[380px] h-[600px] rounded-2xl
-          `}>
+          <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 shadow-2xl overflow-hidden rounded-2xl">
 
             <WidgetHeader
               language={language}

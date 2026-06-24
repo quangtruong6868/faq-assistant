@@ -13,7 +13,7 @@
   iframe.setAttribute('allowtransparency', 'true');
   iframe.setAttribute('frameborder', '0');
 
-  // Default: small — just enough for the chat button
+  // Closed: just the button
   function setSmall() {
     iframe.style.cssText = [
       'position:fixed',
@@ -25,22 +25,25 @@
       'z-index:2147483647',
       'background:transparent',
       'pointer-events:auto',
-      'overflow:hidden',
     ].join(';');
   }
 
-  // Open: full chat window size
+  // Open: chat panel positioned bottom-right with padding
   function setOpen() {
+    var w = Math.min(400, window.innerWidth - 24);
+    var h = Math.min(620, window.innerHeight - 24);
     iframe.style.cssText = [
       'position:fixed',
-      'bottom:0',
-      'right:0',
-      'width:420px',
-      'height:680px',
+      'bottom:12px',
+      'right:12px',
+      'width:' + w + 'px',
+      'height:' + h + 'px',
       'border:none',
       'z-index:2147483647',
       'background:transparent',
       'pointer-events:auto',
+      'border-radius:16px',
+      'box-shadow:0 20px 60px rgba(0,0,0,0.2)',
     ].join(';');
   }
 
