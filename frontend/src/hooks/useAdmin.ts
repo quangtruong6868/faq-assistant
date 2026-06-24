@@ -74,17 +74,33 @@ export function useFaqItems() {
 async function extractTextClientSide(file: File, ext: string): Promise<string> {
   if (ext === 'xlsx' || ext === 'xls') {
     const buf = await file.arrayBuffer()
-    const wb = XLSX.read(buf, { type: 'array' })
+    // sheetRows limits rows per sheet to avoid RangeError on large files
+    const wb = XLSX.read(buf, { type: 'array', sheetRows: 2000 })
     const lines: string[] = []
     for (const sheetName of wb.SheetNames) {
-      const ws = wb.Sheets[sheetName]
-      const csv = XLSX.utils.sheet_to_csv(ws, { blankrows: false })
-      if (csv.trim()) { lines.push(`=== ${sheetName} ===`); lines.push(csv.trim()) }
+      try {
+        const ws = wb.Sheets[sheetName]
+        const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', blankrows: false })
+        if (!rows || rows.length === 0) continue
+        const csvLines = rows
+          .slice(0, 2000)
+          .map(row => row.map(c => String(c ?? '').replace(/,/g, '，')).join(','))
+          .filter(l => l.replace(/,/g, '').trim().length > 0)
+        if (csvLines.length > 0) {
+          lines.push(`=== ${sheetName} ===`)
+          lines.push(csvLines.join('\n'))
+        }
+      } catch (e) {
+        console.warn(`[extract] sheet "${sheetName}" skipped:`, e)
+      }
     }
     return lines.join('\n\n')
   }
-  if (ext === 'txt' || ext === 'csv') return file.text()
-  // DOCX/PDF: server will handle (smaller files, usually OK)
+  if (ext === 'txt' || ext === 'csv') {
+    const text = await file.text()
+    // Limit to first 200KB to avoid memory issues
+    return text.slice(0, 200000)
+  }
   return ''
 }
 
