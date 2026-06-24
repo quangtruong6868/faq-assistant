@@ -96,8 +96,11 @@ async function extractPdf(blob: Blob): Promise<string> {
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
+  let file_path = ''
   try {
-    const { file_path, file_name } = await req.json()
+    const body = await req.json()
+    file_path = body.file_path
+    const file_name = body.file_name
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -199,10 +202,9 @@ serve(async (req) => {
     })
 
   } catch (err) {
-    const body = await req.clone().json().catch(() => ({}))
-    if (body.file_path) {
+    if (file_path) {
       const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
-      await sb.from('documents').update({ status: 'error' }).eq('file_path', body.file_path).catch(() => {})
+      await sb.from('documents').update({ status: 'error' }).eq('file_path', file_path).catch(() => {})
     }
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,

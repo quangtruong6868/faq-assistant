@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useDocuments } from '../../hooks/useAdmin'
+import { supabase } from '../../lib/supabase'
 import type { Document } from '../../lib/supabase'
 
 type Flow = 'internal' | 'corporate' | 'candidate'
@@ -36,7 +37,18 @@ export function AdminDocuments() {
   const [uploading, setUploading] = useState(false)
   const [selectedFlow, setSelectedFlow] = useState<Flow>('internal')
   const [filterFlow, setFilterFlow] = useState<Flow | 'all'>('all')
+  const [retrying, setRetrying] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  const handleRetry = async (doc: Document) => {
+    setRetrying(doc.id)
+    await supabase.from('documents').update({ status: 'pending', chunk_count: 0 }).eq('id', doc.id)
+    await supabase.functions.invoke('embed-document', {
+      body: { file_path: doc.file_path, file_name: doc.file_name },
+    })
+    await refetch()
+    setRetrying(null)
+  }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -164,8 +176,14 @@ export function AdminDocuments() {
                   </p>
                 </div>
                 <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${status.color}`}>
-                  {status.label}
+                  {retrying === doc.id ? '⚙️ Đang xử lý...' : status.label}
                 </span>
+                {(doc.status === 'error' || doc.status === 'pending') && retrying !== doc.id && (
+                  <button onClick={() => handleRetry(doc)}
+                    className="text-xs text-blue-500 hover:text-blue-700 flex-shrink-0 border border-blue-200 px-2 py-1 rounded-lg transition-colors">
+                    ↻ Retry
+                  </button>
+                )}
                 <button onClick={() => handleDelete(doc)}
                   className="text-sm text-red-400 hover:text-red-600 flex-shrink-0 transition-colors">
                   Xóa
