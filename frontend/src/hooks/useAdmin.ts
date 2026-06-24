@@ -106,6 +106,28 @@ function chunkText(text: string, size = 1200, overlap = 150): string[] {
   return chunks
 }
 
+// Re-embed an existing document by downloading from storage and re-parsing
+export async function reEmbedDocument(doc: { id: string; file_path: string; file_name: string; file_type?: string; flow?: string }) {
+  const ext = (doc.file_type || doc.file_name.split('.').pop() || 'bin').toLowerCase()
+  const flow = (doc as any).flow || 'internal'
+
+  await supabase.from('documents').update({ status: 'pending', chunk_count: 0 }).eq('id', doc.id)
+
+  const { data: fileData, error: dlError } = await supabase.storage.from('documents').download(doc.file_path)
+  if (dlError || !fileData) throw new Error('Không tải được file: ' + dlError?.message)
+
+  const file = new File([fileData], doc.file_name, { type: fileData.type })
+  const text = await extractTextClientSide(file, ext)
+  const chunks = chunkText(text)
+
+  if (chunks.length === 0) throw new Error('Không extract được text từ file này')
+
+  const { error: fnError } = await supabase.functions.invoke('embed-document', {
+    body: { document_id: doc.id, chunks, flow },
+  })
+  if (fnError) throw new Error('embed-document lỗi: ' + fnError.message)
+}
+
 export function useDocuments() {
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
@@ -150,9 +172,10 @@ export function useDocuments() {
     const chunks = chunkText(text)
 
     // Send pre-chunked text to edge function — only calls OpenAI embed + DB insert
-    await supabase.functions.invoke('embed-document', {
+    const { error: fnError } = await supabase.functions.invoke('embed-document', {
       body: { document_id: docId, chunks, flow },
     })
+    if (fnError) console.error('[upload] embed-document error:', fnError)
 
     await fetch()
     return null

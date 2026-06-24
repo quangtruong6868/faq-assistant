@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { useDocuments } from '../../hooks/useAdmin'
+import { useDocuments, reEmbedDocument } from '../../hooks/useAdmin'
 import { supabase } from '../../lib/supabase'
 import type { Document } from '../../lib/supabase'
 
@@ -42,12 +42,14 @@ export function AdminDocuments() {
 
   const handleRetry = async (doc: Document) => {
     setRetrying(doc.id)
-    await supabase.from('documents').update({ status: 'pending', chunk_count: 0 }).eq('id', doc.id)
-    await supabase.functions.invoke('embed-document', {
-      body: { file_path: doc.file_path, file_name: doc.file_name },
-    })
-    await refetch()
-    setRetrying(null)
+    try {
+      await reEmbedDocument(doc)
+    } catch (e: any) {
+      alert('Retry thất bại: ' + (e?.message || String(e)))
+    } finally {
+      await refetch()
+      setRetrying(null)
+    }
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,9 +61,14 @@ export function AdminDocuments() {
 
   const doUpload = async (file: File) => {
     setUploading(true)
-    const error = await upload(file, selectedFlow)
-    if (error) alert('Upload thất bại: ' + error.message)
-    setUploading(false)
+    try {
+      const error = await upload(file, selectedFlow)
+      if (error) alert('Upload thất bại: ' + error.message)
+    } catch (e: any) {
+      alert('Upload thất bại: ' + (e?.message || String(e)))
+    } finally {
+      setUploading(false)
+    }
   }
 
   const handleDrop = async (e: React.DragEvent) => {
