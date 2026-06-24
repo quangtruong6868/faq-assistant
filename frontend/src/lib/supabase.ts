@@ -59,3 +59,55 @@ export interface ChatMessage {
 export function getCategoryName(cat: FaqCategory, lang: Language): string {
   return cat[`name_${lang}` as keyof FaqCategory] as string || cat.name_vi
 }
+
+export type FlowType = 'selector' | 'corporate' | 'candidate' | 'internal'
+
+export interface Site {
+  id: string
+  site_key: string
+  site_name: string
+  default_language: Language
+  primary_color: string
+  logo_url?: string
+  enabled_flows: string[]
+}
+
+export interface CompanyLead {
+  site_key?: string
+  session_id?: string
+  company_name?: string
+  contact_name?: string
+  phone?: string
+  email?: string
+  location?: string
+  job_type?: string
+  headcount?: string
+  desired_timing?: string
+  inquiry_type?: string
+  inquiry_content?: string
+  language?: string
+}
+
+export interface CandidateLead {
+  site_key?: string
+  session_id?: string
+  full_name?: string
+  nationality?: string
+  current_visa?: string
+  visa_expiry?: string
+  current_prefecture?: string
+  japanese_level?: string
+  job_type?: string
+  can_relocate?: boolean
+  has_license?: boolean
+  desired_shift?: string
+  available_from?: string
+  phone?: string
+  line_id?: string
+  email?: string
+  specialization?: string
+  experience_years?: string
+  education?: string
+  has_tokutei_cert?: boolean
+  language?: string
+}

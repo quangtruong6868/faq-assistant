@@ -14,15 +14,15 @@ interface Props {
 const LANGUAGES: Language[] = ['vi', 'jp', 'en', 'np']
 
 const SUBTITLE: Record<Language, string> = {
-  vi: 'Hỏi quy định công ty',
-  jp: '社内規定・よくある質問',
-  en: 'Company FAQ Assistant',
-  np: 'कम्पनी नियम सहायक',
+  vi: 'Tư vấn nhân lực & hỗ trợ nội bộ',
+  jp: '人材紹介・採用・社内サポート',
+  en: 'HR Consulting & Internal Support',
+  np: 'एचआर परामर्श र आन्तरिक समर्थन',
 }
 
 export function WidgetHeader({ language, onLanguageChange, onMinimize, onClose, onBack, showBack, title }: Props) {
   return (
-    <div className="bg-blue-600 text-white rounded-t-2xl flex-shrink-0">
+    <div className="bg-red-700 text-white rounded-t-2xl flex-shrink-0">
       {/* Main header row */}
       <div className="flex items-center gap-3 px-4 py-3">
         {showBack && onBack ? (
@@ -36,16 +36,16 @@ export function WidgetHeader({ language, onLanguageChange, onMinimize, onClose, 
             </svg>
           </button>
         ) : (
-          <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-xl flex-shrink-0 select-none">
-            🤖
+          <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 select-none">
+            <span className="text-white text-sm font-bold">TH</span>
           </div>
         )}
 
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold leading-tight truncate">
-            {title || 'Company FAQ Assistant'}
+            {title || 'TH-GROUP'}
           </p>
-          <p className="text-xs text-blue-100 mt-0.5 leading-tight">{SUBTITLE[language]}</p>
+          <p className="text-xs text-red-200 mt-0.5 leading-tight">{SUBTITLE[language]}</p>
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">
@@ -78,8 +78,8 @@ export function WidgetHeader({ language, onLanguageChange, onMinimize, onClose, 
             onClick={() => onLanguageChange(lang)}
             className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all whitespace-nowrap flex-shrink-0 ${
               language === lang
-                ? 'bg-white text-blue-600'
-                : 'text-blue-100 hover:bg-white/20'
+                ? 'bg-white text-red-700'
+                : 'text-red-200 hover:bg-white/20'
             }`}
           >
             {language === lang ? LANGUAGE_FULL_LABELS[lang] : LANGUAGE_LABELS[lang]}

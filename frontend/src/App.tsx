@@ -25,6 +25,8 @@ export default function App() {
     return () => window.removeEventListener('popstate', handler)
   }, [])
 
+  const siteKey = new URLSearchParams(window.location.search).get('site') || 'th-group'
+
   if (path.startsWith('/admin')) return <AdminRoute />
-  return <LandingPage />
+  return <LandingPage siteKey={siteKey} />
 }

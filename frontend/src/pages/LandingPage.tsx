@@ -1,6 +1,6 @@
 import { ChatWidget } from '../components/widget/ChatWidget'
 
-export function LandingPage() {
+export function LandingPage({ siteKey = 'th-group' }: { siteKey?: string }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col items-center justify-center p-8 text-center">
       {/* Company logo placeholder */}
@@ -36,7 +36,7 @@ export function LandingPage() {
       </div>
 
       {/* Widget */}
-      <ChatWidget />
+      <ChatWidget siteKey={siteKey} />
     </div>
   )
 }

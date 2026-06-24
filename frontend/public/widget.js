@@ -1,9 +1,15 @@
 (function () {
-  if (document.getElementById('faq-widget-iframe')) return;
+  if (document.getElementById('th-widget-iframe')) return;
+
+  var script = document.currentScript || (function () {
+    var scripts = document.getElementsByTagName('script');
+    return scripts[scripts.length - 1];
+  })();
+  var siteKey = (script && script.getAttribute('data-site')) || 'th-group';
 
   var iframe = document.createElement('iframe');
-  iframe.id = 'faq-widget-iframe';
-  iframe.src = 'https://faq-assistant-zeta.vercel.app';
+  iframe.id = 'th-widget-iframe';
+  iframe.src = 'https://faq-assistant-zeta.vercel.app?site=' + encodeURIComponent(siteKey);
   iframe.style.cssText = [
     'position:fixed',
     'bottom:0',

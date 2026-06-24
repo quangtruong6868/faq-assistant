@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useAdmin, useDashboard } from '../hooks/useAdmin'
 import { AdminFaqManager } from '../components/admin/AdminFaqManager'
 import { AdminDocuments } from '../components/admin/AdminDocuments'
+import { AdminLeads } from '../components/admin/AdminLeads'
 
-type Tab = 'dashboard' | 'faq' | 'documents'
+type Tab = 'dashboard' | 'faq' | 'documents' | 'leads'
 
 const STAT_CARDS = [
   { key: 'totalFaq', label: 'Tổng FAQ', icon: '📋', color: 'bg-blue-50 text-blue-700' },
@@ -37,6 +38,7 @@ export function AdminDashboard() {
           <nav className="flex-1 p-3 space-y-1">
             {([
               { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+              { id: 'leads', label: 'Leads管理', icon: '📥' },
               { id: 'faq', label: 'Quản lý FAQ', icon: '📋' },
               { id: 'documents', label: 'Tài liệu', icon: '📄' },
             ] as { id: Tab; label: string; icon: string }[]).map(item => (
@@ -130,6 +132,7 @@ export function AdminDashboard() {
             </div>
           )}
 
+          {tab === 'leads' && <AdminLeads />}
           {tab === 'faq' && <AdminFaqManager />}
           {tab === 'documents' && <AdminDocuments />}
         </main>
