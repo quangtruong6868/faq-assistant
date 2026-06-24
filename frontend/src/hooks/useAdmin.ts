@@ -69,6 +69,43 @@ export function useFaqItems() {
   return { items, categories, loading, refetch: fetch, create, update, remove, toggle }
 }
 
+// ── Client-side text extraction helpers ───────────────────────────────────
+
+async function extractTextClientSide(file: File, ext: string): Promise<string> {
+  if (ext === 'xlsx' || ext === 'xls') {
+    const buf = await file.arrayBuffer()
+    const wb = XLSX.read(buf, { type: 'array' })
+    const lines: string[] = []
+    for (const sheetName of wb.SheetNames) {
+      const ws = wb.Sheets[sheetName]
+      const csv = XLSX.utils.sheet_to_csv(ws, { blankrows: false })
+      if (csv.trim()) { lines.push(`=== ${sheetName} ===`); lines.push(csv.trim()) }
+    }
+    return lines.join('\n\n')
+  }
+  if (ext === 'txt' || ext === 'csv') return file.text()
+  // DOCX/PDF: server will handle (smaller files, usually OK)
+  return ''
+}
+
+function chunkText(text: string, size = 1200, overlap = 150): string[] {
+  if (!text || text.length < 20) return []
+  const chunks: string[] = []
+  let start = 0
+  while (start < text.length) {
+    const end = Math.min(start + size, text.length)
+    let breakAt = end
+    if (end < text.length) {
+      const b = Math.max(text.lastIndexOf('.', end), text.lastIndexOf('\n', end))
+      if (b > start + size * 0.5) breakAt = b + 1
+    }
+    const chunk = text.slice(start, breakAt).trim()
+    if (chunk.length > 30) chunks.push(chunk)
+    start = breakAt - overlap
+  }
+  return chunks
+}
+
 export function useDocuments() {
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
@@ -85,51 +122,35 @@ export function useDocuments() {
   const upload = useCallback(async (file: File, flow = 'internal') => {
     const ext = (file.name.split('.').pop() || 'bin').toLowerCase()
     const safeName = file.name
-      .replace(`.${ext}`, '')
+      .replace(/\.\w+$/, '')
       .replace(/[^\w\-]/g, '_')
       .replace(/_+/g, '_')
       .slice(0, 60)
 
-    // XLSX/XLS: parse client-side → upload as .txt to avoid server OOM
-    let uploadFile: File = file
-    let uploadExt = ext
-    let uploadName = file.name
+    const path = `documents/${Date.now()}_${safeName}.${ext}`
 
-    if (ext === 'xlsx' || ext === 'xls') {
-      const buf = await file.arrayBuffer()
-      const wb = XLSX.read(buf, { type: 'array' })
-      const lines: string[] = []
-      for (const sheetName of wb.SheetNames) {
-        const ws = wb.Sheets[sheetName]
-        const csv = XLSX.utils.sheet_to_csv(ws, { blankrows: false })
-        if (csv.trim()) {
-          lines.push(`=== ${sheetName} ===`)
-          lines.push(csv.trim())
-        }
-      }
-      const textContent = lines.join('\n\n')
-      const blob = new Blob([textContent], { type: 'text/plain' })
-      uploadFile = new File([blob], file.name.replace(/\.xlsx?$/i, '.txt'), { type: 'text/plain' })
-      uploadExt = 'txt'
-      uploadName = uploadFile.name
-    }
-
-    const path = `documents/${Date.now()}_${safeName}.${uploadExt}`
-
-    const { error: storageError } = await supabase.storage.from('documents').upload(path, uploadFile)
+    // Upload original file to storage
+    const { error: storageError } = await supabase.storage.from('documents').upload(path, file)
     if (storageError) return storageError
 
-    const { error: dbError } = await supabase.from('documents').insert({
+    const { error: dbError, data: docData } = await supabase.from('documents').insert({
       title: file.name.replace(/\.\w+$/, ''),
-      file_name: uploadName,
+      file_name: file.name,
       file_path: path,
-      file_type: uploadExt,
+      file_type: ext,
       flow,
       status: 'pending',
-    })
+    }).select('id').single()
     if (dbError) return dbError
 
-    await supabase.functions.invoke('embed-document', { body: { file_path: path, file_name: uploadName } })
+    // Extract text & chunk CLIENT-SIDE for all formats (avoids server OOM)
+    const text = await extractTextClientSide(file, ext)
+    const chunks = chunkText(text)
+
+    // Send pre-chunked text to edge function — it only needs to call OpenAI embed
+    await supabase.functions.invoke('embed-document', {
+      body: { document_id: docData.id, chunks, flow },
+    })
 
     await fetch()
     return null
