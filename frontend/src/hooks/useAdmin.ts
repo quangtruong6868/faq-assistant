@@ -121,7 +121,9 @@ function chunkText(text: string, size = 1200, overlap = 150): string[] {
     }
     const chunk = text.slice(start, breakAt).trim()
     if (chunk.length > 30) chunks.push(chunk)
+    if (breakAt >= text.length) break  // reached end, stop
     start = breakAt - overlap
+    if (start <= 0) break  // safety guard
   }
   return chunks
 }
