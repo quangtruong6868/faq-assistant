@@ -127,29 +127,31 @@ export function useDocuments() {
       .replace(/_+/g, '_')
       .slice(0, 60)
 
+    const docId = crypto.randomUUID()
     const path = `documents/${Date.now()}_${safeName}.${ext}`
 
     // Upload original file to storage
     const { error: storageError } = await supabase.storage.from('documents').upload(path, file)
     if (storageError) return storageError
 
-    const { error: dbError, data: docData } = await supabase.from('documents').insert({
+    const { error: dbError } = await supabase.from('documents').insert({
+      id: docId,
       title: file.name.replace(/\.\w+$/, ''),
       file_name: file.name,
       file_path: path,
       file_type: ext,
       flow,
       status: 'pending',
-    }).select('id').single()
+    })
     if (dbError) return dbError
 
-    // Extract text & chunk CLIENT-SIDE for all formats (avoids server OOM)
+    // Extract text & chunk CLIENT-SIDE (avoids server OOM)
     const text = await extractTextClientSide(file, ext)
     const chunks = chunkText(text)
 
-    // Send pre-chunked text to edge function — it only needs to call OpenAI embed
+    // Send pre-chunked text to edge function — only calls OpenAI embed + DB insert
     await supabase.functions.invoke('embed-document', {
-      body: { document_id: docData.id, chunks, flow },
+      body: { document_id: docId, chunks, flow },
     })
 
     await fetch()
