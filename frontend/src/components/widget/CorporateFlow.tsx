@@ -136,8 +136,8 @@ export function CorporateFlow({ language, siteKey }: Props) {
     return (
       <div className="flex flex-col gap-3 p-4">
         <div className="flex gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-            <span className="text-white text-xs font-bold">TH</span>
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-white border border-gray-100 flex-shrink-0 mt-0.5">
+            <img src="/th-logo.jpg" alt="TH-GROUP" className="w-full h-full object-contain" />
           </div>
           <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]">
             <p className="text-sm text-gray-800">🏢 {QUICK_LABEL[language]}</p>

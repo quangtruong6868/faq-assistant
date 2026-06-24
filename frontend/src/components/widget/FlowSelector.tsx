@@ -54,8 +54,8 @@ export function FlowSelector({ language, onSelect }: Props) {
     <div className="flex flex-col gap-4 p-4">
       {/* TH-GROUP Branding + Welcome */}
       <div className="flex gap-2.5">
-        <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 mt-0.5 bg-red-600 flex items-center justify-center">
-          <span className="text-white text-xs font-bold">TH</span>
+        <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 mt-0.5 bg-white border border-gray-100">
+          <img src="/th-logo.jpg" alt="TH-GROUP" className="w-full h-full object-contain" />
         </div>
         <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]">
           <p className="text-sm text-gray-800 whitespace-pre-line">{WELCOME[language]}</p>

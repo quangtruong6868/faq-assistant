@@ -36,8 +36,8 @@ export function WidgetHeader({ language, onLanguageChange, onMinimize, onClose, 
             </svg>
           </button>
         ) : (
-          <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 select-none">
-            <span className="text-white text-sm font-bold">TH</span>
+          <div className="w-9 h-9 rounded-full overflow-hidden bg-white flex-shrink-0">
+            <img src="/th-logo.jpg" alt="TH-GROUP" className="w-full h-full object-contain" />
           </div>
         )}
 

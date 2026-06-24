@@ -21,8 +21,8 @@ export function WidgetButton({ onClick, language, hasUnread }: Props) {
       aria-label="Open TH-GROUP Chat"
     >
       <div className="relative flex-shrink-0">
-        <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center leading-none select-none">
-          <span className="text-white text-sm font-bold">TH</span>
+        <div className="w-9 h-9 rounded-full overflow-hidden bg-white flex items-center justify-center">
+          <img src="/th-logo.jpg" alt="TH-GROUP" className="w-full h-full object-contain" />
         </div>
         {hasUnread && (
           <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-yellow-400 rounded-full border-2 border-red-700" />
