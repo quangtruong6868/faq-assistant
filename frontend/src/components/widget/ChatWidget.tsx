@@ -1,16 +1,13 @@
-import { useCallback, useEffect } from 'react'
-import { useWidget, useCategories, useFaqByCategory } from '../../hooks/useWidget'
-import { useChat } from '../../hooks/useChat'
-import { getCategoryName } from '../../lib/supabase'
+import { useEffect } from 'react'
+import { useWidget } from '../../hooks/useWidget'
 import { WidgetButton } from './WidgetButton'
 import { WidgetHeader } from './WidgetHeader'
-import { HomeView } from './HomeView'
-import { CategoryView } from './CategoryView'
-import { ChatView } from './ChatView'
-import { WidgetInput } from './WidgetInput'
 import { FlowSelector } from './FlowSelector'
 import { CorporateFlow } from './CorporateFlow'
 import { CandidateFlow } from './CandidateFlow'
+import { InternalSelector } from './InternalSelector'
+import { HonshaFlow } from './HonshaFlow'
+import { HakenFlow } from './HakenFlow'
 
 interface Props {
   siteKey?: string
@@ -18,17 +15,10 @@ interface Props {
 
 export function ChatWidget({ siteKey = 'th-group' }: Props) {
   const {
-    isOpen, isMinimized, view, selectedCategory, language,
+    isOpen, isMinimized, view, selectedDepartment, language,
     open, close, minimize, restore,
-    selectFlow, selectCategory, goToChat, goBack, setLanguage,
+    selectFlow, selectInternalSubFlow, selectDepartment, goBack, setLanguage,
   } = useWidget(siteKey)
-
-  const { messages, isLoading, sendMessage } = useChat(language, 'internal')
-  const { categories, loading: catsLoading } = useCategories()
-  const { items: faqItems, loading: faqLoading } = useFaqByCategory(
-    selectedCategory?.id || null,
-    language
-  )
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape' && isOpen) close() }
@@ -36,22 +26,14 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
     return () => window.removeEventListener('keydown', handler)
   }, [isOpen, close])
 
-  const handleSelectQuestion = useCallback((question: string) => {
-    goToChat()
-    sendMessage(question)
-  }, [goToChat, sendMessage])
+  const headerTitle = (() => {
+    if (view === 'honsha_dept') return '📋 本社 FAQ'
+    if (view === 'honsha_chat' && selectedDepartment) return `📋 ${selectedDepartment.jp}`
+    if (view === 'haken_chat') return '📋 派遣 FAQ'
+    if (view === 'internal_selector') return '📋 社内 FAQ'
+    return 'TH-GROUP'
+  })()
 
-  const handleSendFromInput = useCallback((text: string) => {
-    if (view !== 'chat') goToChat()
-    sendMessage(text)
-  }, [view, goToChat, sendMessage])
-
-  const headerTitle = view === 'internal_category' && selectedCategory
-    ? `${selectedCategory.icon || ''} ${getCategoryName(selectedCategory, language)}`
-    : 'TH-GROUP'
-
-  // corporate & candidate flows have their own WidgetInput inside the component
-  const showInput = view === 'chat' || view === 'internal_home' || view === 'internal_category'
   const showBack = view !== 'selector'
 
   return (
@@ -67,7 +49,6 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
             </svg>
           </button>
         )}
-
         {!isOpen && <WidgetButton onClick={open} language={language} />}
       </div>
 
@@ -91,9 +72,11 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
               title={headerTitle}
             />
 
-            <div className="flex-1 overflow-y-auto chat-scroll">
+            <div className="flex-1 overflow-hidden flex flex-col">
               {view === 'selector' && (
-                <FlowSelector language={language} onSelect={selectFlow} />
+                <div className="flex-1 overflow-y-auto">
+                  <FlowSelector language={language} onSelect={selectFlow} />
+                </div>
               )}
 
               {view === 'corporate' && (
@@ -104,34 +87,23 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
                 <CandidateFlow language={language} siteKey={siteKey} />
               )}
 
-              {view === 'internal_home' && (
-                <HomeView
-                  language={language}
-                  categories={categories}
-                  loading={catsLoading}
-                  onSelectCategory={selectCategory}
+              {view === 'internal_selector' && (
+                <div className="flex-1 overflow-y-auto">
+                  <InternalSelector language={language} onSelect={selectInternalSubFlow} />
+                </div>
+              )}
+
+              {(view === 'honsha_dept' || view === 'honsha_chat') && (
+                <HonshaFlow
+                  selectedDepartment={view === 'honsha_chat' ? selectedDepartment : null}
+                  onSelectDepartment={selectDepartment}
                 />
               )}
 
-              {view === 'internal_category' && selectedCategory && (
-                <CategoryView
-                  category={selectedCategory}
-                  items={faqItems}
-                  loading={faqLoading}
-                  language={language}
-                  onSelectQuestion={handleSelectQuestion}
-                  onOpenChat={goToChat}
-                />
-              )}
-
-              {view === 'chat' && (
-                <ChatView messages={messages} isLoading={isLoading} language={language} />
+              {view === 'haken_chat' && (
+                <HakenFlow language={language} />
               )}
             </div>
-
-            {showInput && (
-              <WidgetInput language={language} isLoading={isLoading} onSend={handleSendFromInput} />
-            )}
           </div>
         </>
       )}

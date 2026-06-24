@@ -20,12 +20,15 @@ const STATUS_LABELS: Record<Status, string> = {
 
 const FLOW_LABEL: Record<string, string> = {
   internal: '📋 Nội bộ', corporate: '🏢 Doanh nghiệp', candidate: '👤 Tìm việc',
+  honsha: '🏢 Honsha (本社)', haken: '🏭 Haken (派遣)',
 }
 
 const FLOW_COLOR: Record<string, string> = {
   internal: 'bg-gray-100 text-gray-600',
   corporate: 'bg-red-50 text-red-700',
   candidate: 'bg-blue-50 text-blue-700',
+  honsha: 'bg-red-50 text-red-700',
+  haken: 'bg-blue-50 text-blue-700',
 }
 
 export function AdminUnanswered() {
@@ -121,6 +124,7 @@ export function AdminUnanswered() {
                   {/* Contact info */}
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     {[
+                      ['Nhà máy / Xưởng', item.factory_name],
                       ['Người hỏi', item.contact_name],
                       ['Điện thoại', item.phone],
                       ['Facebook', item.facebook],

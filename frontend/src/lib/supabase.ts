@@ -62,7 +62,7 @@ export function getCategoryName(cat: FaqCategory, lang: Language): string {
   return cat[`name_${lang}` as keyof FaqCategory] as string || cat.name_vi
 }
 
-export type FlowType = 'selector' | 'corporate' | 'candidate' | 'internal'
+export type FlowType = 'selector' | 'corporate' | 'candidate' | 'internal' | 'honsha' | 'haken'
 
 export interface Site {
   id: string

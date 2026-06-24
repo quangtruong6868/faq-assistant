@@ -12,6 +12,7 @@ export interface UnansweredQuestion {
   email?: string
   facebook?: string
   line_id?: string
+  factory_name?: string
   status: 'pending' | 'in_review' | 'answered' | 'added_to_kb'
   admin_note?: string
   created_at: string
@@ -31,6 +32,7 @@ export function useSubmitUnanswered() {
     email?: string
     facebook?: string
     line_id?: string
+    factory_name?: string
   }) => {
     setSubmitting(true)
     await supabase.from('unanswered_questions').insert(data)

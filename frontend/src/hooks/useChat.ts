@@ -5,7 +5,7 @@ import { NO_INFO_MESSAGE, PRIVATE_INFO_RESPONSE, isPrivateInfoQuery } from '../l
 
 export const SESSION_ID = crypto.randomUUID()
 
-export function useChat(language: Language, flow: FlowType = 'internal') {
+export function useChat(language: Language, flow: FlowType = 'internal', options?: { department?: string }) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [lastNoMatch, setLastNoMatch] = useState<string | null>(null) // stores question when no_match
@@ -32,7 +32,7 @@ export function useChat(language: Language, flow: FlowType = 'internal') {
       const history = messages.slice(-4).map(m => ({ role: m.role, content: m.content }))
 
       const { data, error } = await supabase.functions.invoke('chat', {
-        body: { question, language, session_id: SESSION_ID, flow, history },
+        body: { question, language, session_id: SESSION_ID, flow, history, department: options?.department },
       })
 
       if (error) throw error
