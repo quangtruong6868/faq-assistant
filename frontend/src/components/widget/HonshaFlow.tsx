@@ -92,12 +92,25 @@ export function HonshaFlow({ selectedDepartment, onSelectDepartment }: Props) {
                 <img src="/th-logo.jpg" alt="TH" className="w-full h-full object-contain" />
               </div>
             )}
-            <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-line leading-relaxed ${
-              msg.role === 'user'
-                ? 'bg-red-600 text-white rounded-tr-sm'
-                : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-sm'
-            }`}>
-              {msg.content}
+            <div className="flex flex-col gap-1.5 max-w-[80%]">
+              <div className={`px-4 py-3 rounded-2xl text-sm whitespace-pre-line leading-relaxed ${
+                msg.role === 'user'
+                  ? 'bg-red-600 text-white rounded-tr-sm'
+                  : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-sm'
+              }`}>
+                {msg.content}
+              </div>
+              {msg.role === 'assistant' && msg.suggestions && msg.suggestions.length > 0 && (
+                <div className="flex flex-col gap-1">
+                  <p className="text-[10px] text-gray-400">関連する質問:</p>
+                  {msg.suggestions.map((s, i) => (
+                    <button key={i} onClick={() => sendMessage(s)}
+                      className="text-left text-xs text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 rounded-xl px-3 py-1.5 transition-colors">
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ))}

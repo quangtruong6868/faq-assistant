@@ -54,6 +54,7 @@ export interface ChatMessage {
   language: Language
   source?: string
   source_detail?: string
+  suggestions?: string[]
   timestamp: Date
 }
 

@@ -6,13 +6,18 @@ interface Props {
   messages: ChatMessage[]
   isLoading: boolean
   language: Language
+  onSuggestion?: (q: string) => void
 }
 
 const SOURCE_LABEL: Record<Language, string> = {
   vi: 'Nguồn', jp: '出典', en: 'Source', np: 'स्रोत',
 }
 
-function Bubble({ message }: { message: ChatMessage }) {
+const RELATED_LABEL: Record<Language, string> = {
+  vi: 'Câu hỏi liên quan:', jp: '関連する質問:', en: 'Related questions:', np: 'सम्बन्धित प्रश्नहरू:',
+}
+
+function Bubble({ message, onSuggestion }: { message: ChatMessage; onSuggestion?: (q: string) => void }) {
   const isUser = message.role === 'user'
   return (
     <div className={`flex gap-2 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -50,6 +55,20 @@ function Bubble({ message }: { message: ChatMessage }) {
             {message.source_detail && ` • ${message.source_detail}`}
           </p>
         )}
+        {!isUser && message.suggestions && message.suggestions.length > 0 && onSuggestion && (
+          <div className="mt-1 flex flex-col gap-1.5">
+            <p className="text-[10px] text-gray-400 px-1">{RELATED_LABEL[message.language]}</p>
+            {message.suggestions.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => onSuggestion(s)}
+                className="text-left text-xs text-blue-600 border border-blue-200 bg-blue-50 hover:bg-blue-100 rounded-xl px-3 py-1.5 transition-colors"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -76,7 +95,7 @@ function TypingDots() {
   )
 }
 
-export function ChatView({ messages, isLoading }: Props) {
+export function ChatView({ messages, isLoading, onSuggestion }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -86,7 +105,7 @@ export function ChatView({ messages, isLoading }: Props) {
   return (
     <div className="flex flex-col gap-3 p-4">
       {messages.map(msg => (
-        <Bubble key={msg.id} message={msg} />
+        <Bubble key={msg.id} message={msg} onSuggestion={onSuggestion} />
       ))}
       {isLoading && <TypingDots />}
       <div ref={bottomRef} />

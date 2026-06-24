@@ -42,6 +42,7 @@ export function useChat(language: Language, flow: FlowType = 'internal', options
         content: data.answer || NO_INFO_MESSAGE[language],
         language,
         source: data.source,
+        suggestions: data.suggestions || [],
       })
 
       // Flag this question for contact collection
