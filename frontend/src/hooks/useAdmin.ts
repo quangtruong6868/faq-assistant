@@ -82,8 +82,14 @@ export function useDocuments() {
   useEffect(() => { fetch() }, [fetch])
 
   const upload = useCallback(async (file: File, flow = 'internal') => {
-    const ext = file.name.split('.').pop()
-    const path = `documents/${Date.now()}_${file.name}`
+    const ext = file.name.split('.').pop() || 'bin'
+    // Sanitize filename: remove special chars, spaces, non-ASCII
+    const safeName = file.name
+      .replace(`.${ext}`, '')
+      .replace(/[^\w\-]/g, '_')   // keep only letters, numbers, dash, underscore
+      .replace(/_+/g, '_')
+      .slice(0, 60)
+    const path = `documents/${Date.now()}_${safeName}.${ext}`
 
     const { error: storageError } = await supabase.storage.from('documents').upload(path, file)
     if (storageError) return storageError
