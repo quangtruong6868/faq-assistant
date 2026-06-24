@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import * as XLSX from 'xlsx'
 import { supabase } from '../lib/supabase'
 import type { FaqItem, FaqCategory, Document } from '../lib/supabase'
 
@@ -82,30 +83,53 @@ export function useDocuments() {
   useEffect(() => { fetch() }, [fetch])
 
   const upload = useCallback(async (file: File, flow = 'internal') => {
-    const ext = file.name.split('.').pop() || 'bin'
-    // Sanitize filename: remove special chars, spaces, non-ASCII
+    const ext = (file.name.split('.').pop() || 'bin').toLowerCase()
     const safeName = file.name
       .replace(`.${ext}`, '')
-      .replace(/[^\w\-]/g, '_')   // keep only letters, numbers, dash, underscore
+      .replace(/[^\w\-]/g, '_')
       .replace(/_+/g, '_')
       .slice(0, 60)
-    const path = `documents/${Date.now()}_${safeName}.${ext}`
 
-    const { error: storageError } = await supabase.storage.from('documents').upload(path, file)
+    // XLSX/XLS: parse client-side → upload as .txt to avoid server OOM
+    let uploadFile: File = file
+    let uploadExt = ext
+    let uploadName = file.name
+
+    if (ext === 'xlsx' || ext === 'xls') {
+      const buf = await file.arrayBuffer()
+      const wb = XLSX.read(buf, { type: 'array' })
+      const lines: string[] = []
+      for (const sheetName of wb.SheetNames) {
+        const ws = wb.Sheets[sheetName]
+        const csv = XLSX.utils.sheet_to_csv(ws, { blankrows: false })
+        if (csv.trim()) {
+          lines.push(`=== ${sheetName} ===`)
+          lines.push(csv.trim())
+        }
+      }
+      const textContent = lines.join('\n\n')
+      const blob = new Blob([textContent], { type: 'text/plain' })
+      uploadFile = new File([blob], file.name.replace(/\.xlsx?$/i, '.txt'), { type: 'text/plain' })
+      uploadExt = 'txt'
+      uploadName = uploadFile.name
+    }
+
+    const path = `documents/${Date.now()}_${safeName}.${uploadExt}`
+
+    const { error: storageError } = await supabase.storage.from('documents').upload(path, uploadFile)
     if (storageError) return storageError
 
     const { error: dbError } = await supabase.from('documents').insert({
-      title: file.name.replace(`.${ext}`, ''),
-      file_name: file.name,
+      title: file.name.replace(/\.\w+$/, ''),
+      file_name: uploadName,
       file_path: path,
-      file_type: ext,
+      file_type: uploadExt,
       flow,
       status: 'pending',
     })
     if (dbError) return dbError
 
-    // Trigger embedding
-    await supabase.functions.invoke('embed-document', { body: { file_path: path, file_name: file.name } })
+    await supabase.functions.invoke('embed-document', { body: { file_path: path, file_name: uploadName } })
 
     await fetch()
     return null
