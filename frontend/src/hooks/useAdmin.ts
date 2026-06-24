@@ -154,9 +154,11 @@ export function useDocuments() {
     const path = `documents/${Date.now()}_${safeName}.${ext}`
 
     // Phase 1: upload to storage (spinner shows during this)
+    console.log('[upload] 1. uploading to storage...')
     const { error: storageError } = await supabase.storage.from('documents').upload(path, file)
-    if (storageError) return storageError
+    if (storageError) { console.error('[upload] storage error:', storageError); return storageError }
 
+    console.log('[upload] 2. inserting to db...')
     const { error: dbError } = await supabase.from('documents').insert({
       id: docId,
       title: file.name.replace(/\.\w+$/, ''),
@@ -166,22 +168,28 @@ export function useDocuments() {
       flow,
       status: 'pending',
     })
-    if (dbError) return dbError
+    if (dbError) { console.error('[upload] db error:', dbError); return dbError }
 
-    // Phase 2: parse + embed runs fully in background, UI unblocks immediately
+    console.log('[upload] 3. done — spinner stops here. embed runs in background.')
+    await fetch()
+
+    // Phase 2: parse + embed runs fully in background
     setTimeout(async () => {
       try {
+        console.log('[embed-bg] extracting text...')
         const text = await extractTextClientSide(file, ext)
+        console.log('[embed-bg] text length:', text.length)
         const chunks = chunkText(text)
-        await supabase.functions.invoke('embed-document', {
+        console.log('[embed-bg] chunks:', chunks.length, '— calling edge function...')
+        const { error } = await supabase.functions.invoke('embed-document', {
           body: { document_id: docId, chunks, flow },
         })
+        console.log('[embed-bg] done. error:', error)
       } catch (e) {
-        console.error('[upload] background embed error:', e)
+        console.error('[embed-bg] error:', e)
       }
-    }, 0)
+    }, 100)
 
-    await fetch()
     return null
   }, [fetch])
 
