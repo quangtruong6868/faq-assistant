@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react'
 import { useDocuments, reEmbedDocument } from '../../hooks/useAdmin'
-import { supabase } from '../../lib/supabase'
 import type { Document } from '../../lib/supabase'
 
 type Flow = 'internal' | 'corporate' | 'candidate'
