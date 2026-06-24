@@ -11,7 +11,7 @@ interface Props {
   title?: string
 }
 
-const LANGUAGES: Language[] = ['vi', 'jp', 'en', 'np']
+const LANGUAGES: Language[] = ['vi', 'jp']
 
 const SUBTITLE: Record<Language, string> = {
   vi: 'Tư vấn nhân lực & hỗ trợ nội bộ',
