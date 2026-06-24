@@ -61,12 +61,15 @@ export function AdminDocuments() {
 
   const doUpload = async (file: File) => {
     setUploading(true)
+    // Hard timeout: spinner always stops after 10s regardless
+    const timer = setTimeout(() => setUploading(false), 10000)
     try {
       const error = await upload(file, selectedFlow)
       if (error) alert('Upload thất bại: ' + error.message)
     } catch (e: any) {
       alert('Upload thất bại: ' + (e?.message || String(e)))
     } finally {
+      clearTimeout(timer)
       setUploading(false)
     }
   }
