@@ -75,7 +75,7 @@ export function useFaqItems() {
 export async function extractXlsxChunks(file: File): Promise<string[]> {
   try {
     const buf = await file.arrayBuffer()
-    const wb = XLSX.read(buf, { type: 'array', sheetRows: 2000, dense: true })
+    const wb = XLSX.read(buf, { type: 'array', sheetRows: 1001, dense: true })
     const chunks: string[] = []
     for (const sheetName of wb.SheetNames) {
       // Skip instruction/template sheets
@@ -90,7 +90,7 @@ export async function extractXlsxChunks(file: File): Promise<string[]> {
         const qIdx = headers.findIndex(h => /cau.hoi|question|質問|câu hỏi/i.test(h))
         const aIdx = headers.findIndex(h => /tra.loi|answer|回答|trả lời/i.test(h))
 
-        for (let i = 1; i < Math.min(rows.length, 2000); i++) {
+        for (let i = 1; i < Math.min(rows.length, 1001); i++) {
           const row = rows[i]
           if (!Array.isArray(row)) continue
           let chunk: string
