@@ -71,36 +71,43 @@ export function useFaqItems() {
 
 // ── Client-side text extraction helpers ───────────────────────────────────
 
-async function extractTextClientSide(file: File, ext: string): Promise<string> {
-  if (ext === 'xlsx' || ext === 'xls') {
-    try {
-      const buf = await file.arrayBuffer()
-      const wb = XLSX.read(buf, { type: 'array', sheetRows: 500, dense: true })
-      const lines: string[] = []
-      for (const sheetName of wb.SheetNames) {
-        try {
-          const ws = wb.Sheets[sheetName]
-          if (!ws) continue
-          const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', blankrows: false })
-          if (!rows || rows.length === 0) continue
-          const csvLines = rows
-            .slice(0, 500)
-            .map(row => (Array.isArray(row) ? row : []).map(c => String(c ?? '').replace(/[\n\r,]/g, ' ')).join(' | '))
-            .filter(l => l.trim().length > 0)
-          if (csvLines.length > 0) {
-            lines.push(`=== ${sheetName} ===`)
-            lines.push(csvLines.join('\n'))
-          }
-        } catch (e) {
-          console.warn(`[extract] sheet "${sheetName}" skipped:`, e)
+// For xlsx: returns array of row-level chunks (one chunk per data row)
+export async function extractXlsxChunks(file: File): Promise<string[]> {
+  try {
+    const buf = await file.arrayBuffer()
+    const wb = XLSX.read(buf, { type: 'array', sheetRows: 500, dense: true })
+    const chunks: string[] = []
+    for (const sheetName of wb.SheetNames) {
+      // Skip instruction/template sheets
+      if (/huong.dan|instruction|readme|template/i.test(sheetName)) continue
+      try {
+        const ws = wb.Sheets[sheetName]
+        if (!ws) continue
+        const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', blankrows: false })
+        if (!rows || rows.length < 2) continue
+        const headers = rows[0].map((h: any) => String(h ?? '').trim())
+        for (let i = 1; i < Math.min(rows.length, 500); i++) {
+          const row = rows[i]
+          if (!Array.isArray(row)) continue
+          const parts = headers.map((h, j) => {
+            const val = String(row[j] ?? '').replace(/[\n\r]/g, ' ').trim()
+            return val ? `${h}: ${val}` : ''
+          }).filter(Boolean)
+          const chunk = parts.join('\n')
+          if (chunk.length > 10) chunks.push(chunk)
         }
+      } catch (e) {
+        console.warn(`[extract] sheet "${sheetName}" skipped:`, e)
       }
-      return lines.join('\n\n')
-    } catch (e) {
-      console.error('[extract] XLSX parse failed, returning empty:', e)
-      return ''
     }
+    return chunks
+  } catch (e) {
+    console.error('[extract] XLSX parse failed:', e)
+    return []
   }
+}
+
+async function extractTextClientSide(file: File, ext: string): Promise<string> {
   if (ext === 'txt' || ext === 'csv') {
     const text = await file.text()
     return text.slice(0, 200000)
@@ -139,8 +146,13 @@ export async function reEmbedDocument(doc: { id: string; file_path: string; file
   if (dlError || !fileData) throw new Error('Không tải được file: ' + dlError?.message)
 
   const file = new File([fileData], doc.file_name, { type: fileData.type })
-  const text = await extractTextClientSide(file, ext)
-  const chunks = chunkText(text)
+  let chunks: string[]
+  if (ext === 'xlsx' || ext === 'xls') {
+    chunks = await extractXlsxChunks(file)
+  } else {
+    const text = await extractTextClientSide(file, ext)
+    chunks = chunkText(text)
+  }
 
   if (chunks.length === 0) throw new Error('Không extract được text từ file này')
 
@@ -198,10 +210,16 @@ export function useDocuments() {
     // Phase 2: parse + embed runs fully in background
     setTimeout(async () => {
       try {
-        console.log('[embed-bg] extracting text...')
-        const text = await extractTextClientSide(file, ext)
-        console.log('[embed-bg] text length:', text.length)
-        const chunks = chunkText(text)
+        let chunks: string[]
+        if (ext === 'xlsx' || ext === 'xls') {
+          console.log('[embed-bg] extracting xlsx rows...')
+          chunks = await extractXlsxChunks(file)
+        } else {
+          console.log('[embed-bg] extracting text...')
+          const text = await extractTextClientSide(file, ext)
+          console.log('[embed-bg] text length:', text.length)
+          chunks = chunkText(text)
+        }
         console.log('[embed-bg] chunks:', chunks.length, '— calling edge function...')
         const { error } = await supabase.functions.invoke('embed-document', {
           body: { document_id: docId, chunks, flow },
