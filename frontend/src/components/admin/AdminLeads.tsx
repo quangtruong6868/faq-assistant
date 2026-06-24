@@ -32,6 +32,7 @@ interface CompanyLeadRow {
   desired_timing?: string
   inquiry_type?: string
   inquiry_content?: string
+  facebook?: string
   language?: string
   status: LeadStatus
   notes?: string
@@ -50,6 +51,7 @@ interface CandidateLeadRow {
   phone?: string
   line_id?: string
   email?: string
+  facebook?: string
   language?: string
   status: LeadStatus
   notes?: string
@@ -210,6 +212,7 @@ export function AdminLeads() {
                           ['時期', lead.desired_timing],
                           ['相談種別', lead.inquiry_type],
                           ['メール', lead.email],
+                          ['Facebook', lead.facebook],
                         ].map(([k, v]) => v ? (
                           <div key={k}>
                             <span className="text-xs text-gray-400">{k}: </span>
@@ -270,6 +273,7 @@ export function AdminLeads() {
                           ['希望職種', lead.job_type],
                           ['LINE', lead.line_id],
                           ['メール', lead.email],
+                          ['Facebook', lead.facebook],
                         ].map(([k, v]) => v ? (
                           <div key={k}>
                             <span className="text-xs text-gray-400">{k}: </span>

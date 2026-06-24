@@ -5,7 +5,7 @@ create table if not exists sites (
   id uuid primary key default gen_random_uuid(),
   site_key text not null unique,
   site_name text not null,
-  default_language text default 'ja' check (default_language in ('vi','jp','en','np')),
+  default_language text default 'jp' check (default_language in ('vi','jp','en','np')),
   primary_color text default '#D42B2B',
   logo_url text,
   enabled_flows text[] default array['corporate','candidate','internal'],
@@ -14,9 +14,9 @@ create table if not exists sites (
 
 -- Seed TH-GROUP site
 insert into sites (site_key, site_name, default_language, primary_color, enabled_flows) values
-  ('th-group',   'TH-GROUP',      'ja', '#D42B2B', array['corporate','candidate','internal']),
-  ('leximco',    'LEXIMCO',       'ja', '#D42B2B', array['corporate','candidate','internal']),
-  ('mirai-baito','MIRAI BAITO',   'ja', '#D42B2B', array['candidate'])
+  ('th-group',   'TH-GROUP',      'jp', '#D42B2B', array['corporate','candidate','internal']),
+  ('leximco',    'LEXIMCO',       'jp', '#D42B2B', array['corporate','candidate','internal']),
+  ('mirai-baito','MIRAI BAITO',   'jp', '#D42B2B', array['candidate'])
 on conflict (site_key) do nothing;
 
 -- Company leads (法人問い合わせ)
@@ -37,7 +37,7 @@ create table if not exists company_leads (
   inquiry_type text,
   inquiry_content text,
   -- Meta
-  language text default 'ja',
+  language text default 'jp',
   status text default 'new' check (status in ('new','contacted','in_progress','closed','rejected')),
   notes text,
   created_at timestamptz default now()

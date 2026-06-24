@@ -37,6 +37,7 @@ const LABELS: Record<Language, Record<string, string>> = {
     phone: '電話番号 *',
     line_id: 'LINE ID',
     email: 'メール',
+    facebook: 'Facebook',
     submit: '送信する',
     sending: '送信中...',
     yes: 'はい',
@@ -60,6 +61,7 @@ const LABELS: Record<Language, Record<string, string>> = {
     phone: 'Số điện thoại *',
     line_id: 'LINE ID',
     email: 'Email',
+    facebook: 'Facebook',
     submit: 'Gửi',
     sending: 'Đang gửi...',
     yes: 'Có',
@@ -83,6 +85,7 @@ const LABELS: Record<Language, Record<string, string>> = {
     phone: 'Phone Number *',
     line_id: 'LINE ID',
     email: 'Email',
+    facebook: 'Facebook',
     submit: 'Submit',
     sending: 'Sending...',
     yes: 'Yes',
@@ -106,6 +109,7 @@ const LABELS: Record<Language, Record<string, string>> = {
     phone: 'फोन नम्बर *',
     line_id: 'LINE ID',
     email: 'इमेल',
+    facebook: 'Facebook',
     submit: 'पठाउनुहोस्',
     sending: 'पठाउँदै...',
     yes: 'हो',
@@ -295,6 +299,19 @@ export function CandidateFlow({ language, siteKey }: Props) {
               placeholder="email@..."
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
           </div>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            <span className="inline-flex items-center gap-1">
+              <svg className="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              {l.facebook}
+            </span>
+          </label>
+          <input value={(form as any).facebook || ''} onChange={e => set('facebook' as any, e.target.value)}
+            placeholder="facebook.com/... hoặc tên FB"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
         </div>
       </div>
 

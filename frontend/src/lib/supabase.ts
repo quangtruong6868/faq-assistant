@@ -85,6 +85,7 @@ export interface CompanyLead {
   desired_timing?: string
   inquiry_type?: string
   inquiry_content?: string
+  facebook?: string
   language?: string
 }
 
@@ -105,6 +106,7 @@ export interface CandidateLead {
   phone?: string
   line_id?: string
   email?: string
+  facebook?: string
   specialization?: string
   experience_years?: string
   education?: string
