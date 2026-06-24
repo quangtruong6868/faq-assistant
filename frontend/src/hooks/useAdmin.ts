@@ -73,32 +73,36 @@ export function useFaqItems() {
 
 async function extractTextClientSide(file: File, ext: string): Promise<string> {
   if (ext === 'xlsx' || ext === 'xls') {
-    const buf = await file.arrayBuffer()
-    // sheetRows limits rows per sheet to avoid RangeError on large files
-    const wb = XLSX.read(buf, { type: 'array', sheetRows: 2000 })
-    const lines: string[] = []
-    for (const sheetName of wb.SheetNames) {
-      try {
-        const ws = wb.Sheets[sheetName]
-        const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', blankrows: false })
-        if (!rows || rows.length === 0) continue
-        const csvLines = rows
-          .slice(0, 2000)
-          .map(row => row.map(c => String(c ?? '').replace(/,/g, '，')).join(','))
-          .filter(l => l.replace(/,/g, '').trim().length > 0)
-        if (csvLines.length > 0) {
-          lines.push(`=== ${sheetName} ===`)
-          lines.push(csvLines.join('\n'))
+    try {
+      const buf = await file.arrayBuffer()
+      const wb = XLSX.read(buf, { type: 'array', sheetRows: 500, dense: true })
+      const lines: string[] = []
+      for (const sheetName of wb.SheetNames) {
+        try {
+          const ws = wb.Sheets[sheetName]
+          if (!ws) continue
+          const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', blankrows: false })
+          if (!rows || rows.length === 0) continue
+          const csvLines = rows
+            .slice(0, 500)
+            .map(row => (Array.isArray(row) ? row : []).map(c => String(c ?? '').replace(/[\n\r,]/g, ' ')).join(' | '))
+            .filter(l => l.trim().length > 0)
+          if (csvLines.length > 0) {
+            lines.push(`=== ${sheetName} ===`)
+            lines.push(csvLines.join('\n'))
+          }
+        } catch (e) {
+          console.warn(`[extract] sheet "${sheetName}" skipped:`, e)
         }
-      } catch (e) {
-        console.warn(`[extract] sheet "${sheetName}" skipped:`, e)
       }
+      return lines.join('\n\n')
+    } catch (e) {
+      console.error('[extract] XLSX parse failed, returning empty:', e)
+      return ''
     }
-    return lines.join('\n\n')
   }
   if (ext === 'txt' || ext === 'csv') {
     const text = await file.text()
-    // Limit to first 200KB to avoid memory issues
     return text.slice(0, 200000)
   }
   return ''
