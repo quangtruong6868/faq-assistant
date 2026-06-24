@@ -108,13 +108,15 @@ serve(async (req) => {
     })
     const embedding = embeddingRes.data[0].embedding
 
+    console.log(`[chat] flow=${flow} lang=${language} q="${question.slice(0,50)}"`)
     const { data: allChunks } = await supabase.rpc('match_document_chunks', {
       query_embedding: embedding,
-      match_threshold: 0.45,
+      match_threshold: 0.30,
       match_count: 8,
     })
 
     // Filter: honsha/haken → use 'internal' tagged docs; others → match their own flow or untagged
+    console.log(`[chat] allChunks=${allChunks?.length} scores=${JSON.stringify(allChunks?.map((c:any)=>c.similarity?.toFixed(3)))}`)
     const docFlow = INTERNAL_FLOWS.has(flow) ? 'internal' : flow
     const chunks = (allChunks || [])
       .filter((c: any) => !c.flow || c.flow === docFlow)
