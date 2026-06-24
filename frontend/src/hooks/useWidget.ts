@@ -24,8 +24,14 @@ export function useWidget(siteKey = 'th-group') {
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null)
   const [language, setLanguage] = useState<Language>(detectBrowserLanguage)
 
-  const open = useCallback(() => { setIsOpen(true); setIsMinimized(false) }, [])
-  const close = useCallback(() => { setIsOpen(false) }, [])
+  const open = useCallback(() => {
+    setIsOpen(true); setIsMinimized(false)
+    window.parent?.postMessage({ type: 'th-widget-open' }, '*')
+  }, [])
+  const close = useCallback(() => {
+    setIsOpen(false)
+    window.parent?.postMessage({ type: 'th-widget-close' }, '*')
+  }, [])
   const minimize = useCallback(() => setIsMinimized(true), [])
   const restore = useCallback(() => setIsMinimized(false), [])
 

@@ -54,13 +54,10 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
 
       {isOpen && !isMinimized && (
         <>
-          <div className="fixed inset-0 bg-black/30 z-40 sm:hidden" onClick={close} />
-
           <div className={`
             fixed z-50 flex flex-col bg-gray-50 shadow-2xl overflow-hidden
-            bottom-0 left-0 right-0 h-[92dvh] rounded-t-2xl
-            sm:bottom-6 sm:right-6 sm:left-auto sm:w-[380px] sm:h-[600px] sm:rounded-2xl
-          `} style={{ maxHeight: '92dvh' }}>
+            bottom-6 right-6 w-[380px] h-[600px] rounded-2xl
+          `}>
 
             <WidgetHeader
               language={language}
