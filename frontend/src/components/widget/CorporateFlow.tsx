@@ -3,6 +3,7 @@ import type { Language, CompanyLead } from '../../lib/supabase'
 import { useChat } from '../../hooks/useChat'
 import { useLeads } from '../../hooks/useLeads'
 import { WidgetInput } from './WidgetInput'
+import { NoMatchContactForm } from './NoMatchContactForm'
 
 interface Props {
   language: Language
@@ -45,7 +46,7 @@ const THANK_YOU: Record<Language, string> = {
 }
 
 export function CorporateFlow({ language, siteKey }: Props) {
-  const { messages, isLoading, sendMessage } = useChat(language, 'corporate')
+  const { messages, isLoading, sendMessage, lastNoMatch, clearNoMatch } = useChat(language, 'corporate')
   const { submitting, submitted, error, submitCompanyLead } = useLeads(siteKey)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState<CompanyLead>({})
@@ -136,8 +137,18 @@ export function CorporateFlow({ language, siteKey }: Props) {
           </div>
         )}
 
+        {/* No-match contact form */}
+        {lastNoMatch && (
+          <NoMatchContactForm
+            question={lastNoMatch}
+            language={language}
+            flow="corporate"
+            onDismiss={clearNoMatch}
+          />
+        )}
+
         {/* Contact form button — show after 2 messages */}
-        {messages.length >= 2 && !showForm && !submitted && (
+        {messages.length >= 2 && !showForm && !submitted && !lastNoMatch && (
           <div className="pl-10">
             <button onClick={() => setShowForm(true)}
               className="text-xs px-4 py-2 bg-red-50 border border-red-200 text-red-700 rounded-xl hover:bg-red-100 transition-colors">

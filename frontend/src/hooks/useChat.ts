@@ -3,11 +3,12 @@ import { supabase } from '../lib/supabase'
 import type { ChatMessage, Language, FlowType } from '../lib/supabase'
 import { NO_INFO_MESSAGE, PRIVATE_INFO_RESPONSE, isPrivateInfoQuery } from '../lib/utils'
 
-const SESSION_ID = crypto.randomUUID()
+export const SESSION_ID = crypto.randomUUID()
 
 export function useChat(language: Language, flow: FlowType = 'internal') {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [lastNoMatch, setLastNoMatch] = useState<string | null>(null) // stores question when no_match
 
   const addMessage = useCallback((msg: Omit<ChatMessage, 'id' | 'timestamp'>) => {
     const newMsg: ChatMessage = { ...msg, id: crypto.randomUUID(), timestamp: new Date() }
@@ -17,6 +18,7 @@ export function useChat(language: Language, flow: FlowType = 'internal') {
 
   const sendMessage = useCallback(async (question: string) => {
     if (!question.trim() || isLoading) return
+    setLastNoMatch(null)
 
     addMessage({ role: 'user', content: question, language })
     setIsLoading(true)
@@ -27,8 +29,7 @@ export function useChat(language: Language, flow: FlowType = 'internal') {
         return
       }
 
-      // Build history for context (last 6 turns max)
-      const history = messages.slice(-6).map(m => ({ role: m.role, content: m.content }))
+      const history = messages.slice(-4).map(m => ({ role: m.role, content: m.content }))
 
       const { data, error } = await supabase.functions.invoke('chat', {
         body: { question, language, session_id: SESSION_ID, flow, history },
@@ -41,8 +42,10 @@ export function useChat(language: Language, flow: FlowType = 'internal') {
         content: data.answer || NO_INFO_MESSAGE[language],
         language,
         source: data.source,
-        source_detail: data.source_detail,
       })
+
+      // Flag this question for contact collection
+      if (data.no_match) setLastNoMatch(question)
 
     } catch {
       addMessage({ role: 'assistant', content: NO_INFO_MESSAGE[language], language })
@@ -51,8 +54,8 @@ export function useChat(language: Language, flow: FlowType = 'internal') {
     }
   }, [addMessage, isLoading, language, flow, messages])
 
-  const clearMessages = useCallback(() => setMessages([]), [])
+  const clearMessages = useCallback(() => { setMessages([]); setLastNoMatch(null) }, [])
+  const clearNoMatch = useCallback(() => setLastNoMatch(null), [])
 
-  return { messages, isLoading, sendMessage, clearMessages }
+  return { messages, isLoading, sendMessage, clearMessages, lastNoMatch, clearNoMatch }
 }
-

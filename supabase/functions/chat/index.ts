@@ -154,16 +154,17 @@ serve(async (req) => {
       })
 
       const answer = completion.choices[0].message.content || NO_INFO[language]
+      const isNoInfo = !answer || answer === NO_INFO[language]
       await logChat(supabase, session_id, question, answer, language, 'general')
       await updatePopular(supabase, question, language)
 
-      return respond({ answer, source: null })
+      return respond({ answer, source: null, no_match: isNoInfo, session_id })
     }
 
-    // Internal with no match
+    // No match in any flow — signal frontend to collect contact
     await logChat(supabase, session_id, question, NO_INFO[language], language, 'no_match')
     await updatePopular(supabase, question, language)
-    return respond({ answer: NO_INFO[language], source: null })
+    return respond({ answer: NO_INFO[language], source: null, no_match: true, session_id })
 
   } catch (err) {
     return new Response(JSON.stringify({ error: String(err) }), {

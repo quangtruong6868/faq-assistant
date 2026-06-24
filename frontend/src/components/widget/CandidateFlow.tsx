@@ -3,6 +3,7 @@ import type { Language, CandidateLead } from '../../lib/supabase'
 import { useChat } from '../../hooks/useChat'
 import { useLeads } from '../../hooks/useLeads'
 import { WidgetInput } from './WidgetInput'
+import { NoMatchContactForm } from './NoMatchContactForm'
 
 interface Props {
   language: Language
@@ -45,7 +46,7 @@ const THANK_YOU: Record<Language, string> = {
 }
 
 export function CandidateFlow({ language, siteKey }: Props) {
-  const { messages, isLoading, sendMessage } = useChat(language, 'candidate')
+  const { messages, isLoading, sendMessage, lastNoMatch, clearNoMatch } = useChat(language, 'candidate')
   const { submitting, submitted, error, submitCandidateLead } = useLeads(siteKey)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState<CandidateLead>({ language })
@@ -124,8 +125,18 @@ export function CandidateFlow({ language, siteKey }: Props) {
           </div>
         )}
 
+        {/* No-match contact form */}
+        {lastNoMatch && (
+          <NoMatchContactForm
+            question={lastNoMatch}
+            language={language}
+            flow="candidate"
+            onDismiss={clearNoMatch}
+          />
+        )}
+
         {/* Contact button */}
-        {messages.length >= 2 && !showForm && !submitted && (
+        {messages.length >= 2 && !showForm && !submitted && !lastNoMatch && (
           <div className="pl-10">
             <button onClick={() => setShowForm(true)}
               className="text-xs px-4 py-2 bg-red-50 border border-red-200 text-red-700 rounded-xl hover:bg-red-100 transition-colors">
