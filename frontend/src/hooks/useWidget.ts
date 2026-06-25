@@ -17,6 +17,24 @@ export interface Department {
   vi: string
 }
 
+const HONSHA_SESSION_KEY = 'honsha_verified_at'
+const SESSION_TTL_MS = 2 * 60 * 60 * 1000 // 2 hours
+
+function isHonshaSessionValid(): boolean {
+  const raw = localStorage.getItem(HONSHA_SESSION_KEY)
+  if (!raw) return false
+  const verifiedAt = parseInt(raw, 10)
+  return Date.now() - verifiedAt < SESSION_TTL_MS
+}
+
+function saveHonshaSession() {
+  localStorage.setItem(HONSHA_SESSION_KEY, String(Date.now()))
+}
+
+function clearHonshaSession() {
+  localStorage.removeItem(HONSHA_SESSION_KEY)
+}
+
 export function useWidget(siteKey = 'th-group') {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
@@ -24,7 +42,7 @@ export function useWidget(siteKey = 'th-group') {
   const [flow, setFlow] = useState<FlowType>('selector')
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null)
   const [language, setLanguage] = useState<Language>(detectBrowserLanguage)
-  const [honshaVerified, setHonshaVerified] = useState(() => sessionStorage.getItem('honsha_verified') === '1')
+  const [honshaVerified, setHonshaVerified] = useState(isHonshaSessionValid)
 
   const open = useCallback(() => {
     setIsOpen(true); setIsMinimized(false)
@@ -53,8 +71,7 @@ export function useWidget(siteKey = 'th-group') {
   const selectInternalSubFlow = useCallback((sub: 'honsha' | 'haken') => {
     setFlow(sub)
     if (sub === 'honsha') {
-      // Require PIN if not yet verified this session
-      if (sessionStorage.getItem('honsha_verified') === '1') setView('honsha_dept')
+      if (isHonshaSessionValid()) setView('honsha_dept')
       else setView('honsha_login')
     } else {
       setView('haken_chat')
@@ -62,6 +79,7 @@ export function useWidget(siteKey = 'th-group') {
   }, [])
 
   const onHonshaLoginSuccess = useCallback(() => {
+    saveHonshaSession()
     setHonshaVerified(true)
     setView('honsha_dept')
   }, [])
@@ -85,6 +103,6 @@ export function useWidget(siteKey = 'th-group') {
     honshaVerified,
     open, close, minimize, restore,
     goSelector, selectFlow, selectInternalSubFlow, selectDepartment, goBack,
-    onHonshaLoginSuccess, setLanguage,
+    onHonshaLoginSuccess, clearHonshaSession, setLanguage,
   }
 }
