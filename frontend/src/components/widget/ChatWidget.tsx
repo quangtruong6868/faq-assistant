@@ -3,11 +3,10 @@ import { useWidget } from '../../hooks/useWidget'
 import { WidgetButton } from './WidgetButton'
 import { WidgetHeader } from './WidgetHeader'
 import { FlowSelector } from './FlowSelector'
-import { CorporateFlow } from './CorporateFlow'
-import { CandidateFlow } from './CandidateFlow'
 import { InternalSelector } from './InternalSelector'
 import { HonshaFlow } from './HonshaFlow'
-import { HakenFlow } from './HakenFlow'
+import { HonshaLogin } from './HonshaLogin'
+import { MaintenanceForm } from './MaintenanceForm'
 
 interface Props {
   siteKey?: string
@@ -17,7 +16,8 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
   const {
     isOpen, isMinimized, view, selectedDepartment, language,
     open, close, minimize, restore,
-    selectFlow, selectInternalSubFlow, selectDepartment, goBack, setLanguage,
+    selectFlow, selectInternalSubFlow, selectDepartment, goBack,
+    onHonshaLoginSuccess, setLanguage,
   } = useWidget(siteKey)
 
   useEffect(() => {
@@ -27,6 +27,7 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
   }, [isOpen, close])
 
   const headerTitle = (() => {
+    if (view === 'honsha_login') return '🔒 本社スタッフ'
     if (view === 'honsha_dept') return '📋 本社 FAQ'
     if (view === 'honsha_chat' && selectedDepartment) return `📋 ${selectedDepartment.jp}`
     if (view === 'haken_chat') return '📋 派遣 FAQ'
@@ -74,11 +75,15 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
               )}
 
               {view === 'corporate' && (
-                <CorporateFlow language={language} siteKey={siteKey} />
+                <MaintenanceForm language={language} siteKey={siteKey} flow="corporate" />
               )}
 
               {view === 'candidate' && (
-                <CandidateFlow language={language} siteKey={siteKey} />
+                <MaintenanceForm language={language} siteKey={siteKey} flow="candidate" />
+              )}
+
+              {view === 'haken_chat' && (
+                <MaintenanceForm language={language} siteKey={siteKey} flow="haken" />
               )}
 
               {view === 'internal_selector' && (
@@ -87,15 +92,15 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
                 </div>
               )}
 
+              {view === 'honsha_login' && (
+                <HonshaLogin language={language} onSuccess={onHonshaLoginSuccess} />
+              )}
+
               {(view === 'honsha_dept' || view === 'honsha_chat') && (
                 <HonshaFlow
                   selectedDepartment={view === 'honsha_chat' ? selectedDepartment : null}
                   onSelectDepartment={selectDepartment}
                 />
-              )}
-
-              {view === 'haken_chat' && (
-                <HakenFlow language={language} />
               )}
             </div>
           </div>

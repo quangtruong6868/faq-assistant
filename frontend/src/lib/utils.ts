@@ -30,10 +30,10 @@ export function detectBrowserLanguage(): Language {
 }
 
 export const NO_INFO_MESSAGE: Record<Language, string> = {
-  vi: 'Xin lỗi, tôi chưa có thông tin về câu hỏi này. Vui lòng liên hệ người phụ trách để được hỗ trợ.',
-  jp: '申し訳ありませんが、この質問に関する情報がまだありません。担当者にお問い合わせください。',
-  en: "Sorry, I don't have information about this question yet. Please contact the person in charge for assistance.",
-  np: 'माफ गर्नुहोस्, मसँग यस प्रश्नको बारेमा जानकारी छैन। सहायताको लागि सम्बन्धित व्यक्तिलाई सम्पर्क गर्नुहोस्।',
+  vi: 'Hệ thống đang được nâng cấp. Vui lòng để lại thông tin để được hỗ trợ.',
+  jp: 'システムはアップグレード中です。以下から情報をお残しください。',
+  en: 'The system is currently being upgraded. Please leave your contact info below.',
+  np: 'प्रणाली अपग्रेड भइरहेको छ। तलको जानकारी छाड्नुहोस्।',
 }
 
 export const PRIVATE_INFO_TOPICS = [

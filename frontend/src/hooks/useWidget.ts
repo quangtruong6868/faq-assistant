@@ -7,6 +7,7 @@ export type WidgetView =
   | 'corporate'
   | 'candidate'
   | 'internal_selector'
+  | 'honsha_login'
   | 'honsha_dept'
   | 'honsha_chat'
   | 'haken_chat'
@@ -23,6 +24,7 @@ export function useWidget(siteKey = 'th-group') {
   const [flow, setFlow] = useState<FlowType>('selector')
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null)
   const [language, setLanguage] = useState<Language>(detectBrowserLanguage)
+  const [honshaVerified, setHonshaVerified] = useState(() => sessionStorage.getItem('honsha_verified') === '1')
 
   const open = useCallback(() => {
     setIsOpen(true); setIsMinimized(false)
@@ -50,8 +52,18 @@ export function useWidget(siteKey = 'th-group') {
 
   const selectInternalSubFlow = useCallback((sub: 'honsha' | 'haken') => {
     setFlow(sub)
-    if (sub === 'honsha') setView('honsha_dept')
-    else setView('haken_chat')
+    if (sub === 'honsha') {
+      // Require PIN if not yet verified this session
+      if (sessionStorage.getItem('honsha_verified') === '1') setView('honsha_dept')
+      else setView('honsha_login')
+    } else {
+      setView('haken_chat')
+    }
+  }, [])
+
+  const onHonshaLoginSuccess = useCallback(() => {
+    setHonshaVerified(true)
+    setView('honsha_dept')
   }, [])
 
   const selectDepartment = useCallback((dept: Department) => {
@@ -62,6 +74,7 @@ export function useWidget(siteKey = 'th-group') {
   const goBack = useCallback(() => {
     if (view === 'honsha_chat') setView('honsha_dept')
     else if (view === 'honsha_dept') { setView('internal_selector'); setFlow('internal') }
+    else if (view === 'honsha_login') { setView('internal_selector'); setFlow('internal') }
     else if (view === 'haken_chat') { setView('internal_selector'); setFlow('internal') }
     else if (view === 'internal_selector') goSelector()
     else goSelector()
@@ -69,7 +82,9 @@ export function useWidget(siteKey = 'th-group') {
 
   return {
     isOpen, isMinimized, view, flow, selectedDepartment, language, siteKey,
+    honshaVerified,
     open, close, minimize, restore,
-    goSelector, selectFlow, selectInternalSubFlow, selectDepartment, goBack, setLanguage,
+    goSelector, selectFlow, selectInternalSubFlow, selectDepartment, goBack,
+    onHonshaLoginSuccess, setLanguage,
   }
 }

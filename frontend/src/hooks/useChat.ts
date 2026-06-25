@@ -37,19 +37,22 @@ export function useChat(language: Language, flow: FlowType = 'internal', options
 
       if (error) throw error
 
-      addMessage({
-        role: 'assistant',
-        content: data.answer || NO_INFO_MESSAGE[language],
-        language,
-        source: data.source,
-        suggestions: data.suggestions || [],
-      })
-
-      // Flag this question for contact collection
-      if (data.no_match) setLastNoMatch(question)
+      if (!data.answer || data.no_match) {
+        addMessage({ role: 'assistant', content: NO_INFO_MESSAGE[language], language })
+        setLastNoMatch(question)
+      } else {
+        addMessage({
+          role: 'assistant',
+          content: data.answer,
+          language,
+          source: data.source,
+          suggestions: data.suggestions || [],
+        })
+      }
 
     } catch {
       addMessage({ role: 'assistant', content: NO_INFO_MESSAGE[language], language })
+      setLastNoMatch(question)
     } finally {
       setIsLoading(false)
     }
