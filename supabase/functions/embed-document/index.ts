@@ -27,21 +27,24 @@ serve(async (req) => {
     document_id = body.document_id
     const chunks: string[] = body.chunks || []
     const flow: string = body.flow || 'internal'
+    const append: boolean = body.append === true
 
     if (!document_id) throw new Error('document_id required')
     if (chunks.length === 0) throw new Error('No chunks provided')
 
-    console.log(`[embed] doc=${document_id} chunks=${chunks.length} flow=${flow}`)
+    console.log(`[embed] doc=${document_id} chunks=${chunks.length} flow=${flow} append=${append}`)
 
     // Mark processing
     await fetch(`${SB_URL}/rest/v1/documents?id=eq.${document_id}`, {
       method: 'PATCH', headers: sbH, body: JSON.stringify({ status: 'processing' }),
     })
 
-    // Delete old chunks
-    await fetch(`${SB_URL}/rest/v1/document_chunks?document_id=eq.${document_id}`, {
-      method: 'DELETE', headers: sbH,
-    })
+    // Delete old chunks only on first batch
+    if (!append) {
+      await fetch(`${SB_URL}/rest/v1/document_chunks?document_id=eq.${document_id}`, {
+        method: 'DELETE', headers: sbH,
+      })
+    }
 
     // Embed in batches of 20
     const BATCH = 20
@@ -71,11 +74,15 @@ serve(async (req) => {
       inserted += batch.length
     }
 
+    // Get current chunk_count to accumulate across batches
+    const docRes = await fetch(`${SB_URL}/rest/v1/documents?id=eq.${document_id}&select=chunk_count`, { headers: sbH })
+    const docData = await docRes.json()
+    const prevCount = append ? ((docData[0]?.chunk_count) || 0) : 0
     await fetch(`${SB_URL}/rest/v1/documents?id=eq.${document_id}`, {
       method: 'PATCH', headers: sbH,
-      body: JSON.stringify({ status: 'ready', chunk_count: inserted }),
+      body: JSON.stringify({ status: 'ready', chunk_count: prevCount + inserted }),
     })
-    console.log(`[embed] Done: ${inserted} chunks`)
+    console.log(`[embed] Done: ${inserted} chunks (total=${prevCount + inserted})`)
 
     return new Response(JSON.stringify({ success: true, chunks: inserted }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

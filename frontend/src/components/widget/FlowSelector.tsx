@@ -8,8 +8,6 @@ interface Props {
 const WELCOME: Record<Language, string> = {
   vi: 'Xin chào! TH-GROUP có thể giúp gì cho bạn?',
   jp: 'こんにちは！TH-GROUPへようこそ。\nご用件をお選びください。',
-  en: 'Hello! Welcome to TH-GROUP.\nHow can we help you?',
-  np: 'नमस्ते! TH-GROUP मा स्वागत छ।',
 }
 
 const FLOWS: Record<Language, {
@@ -26,16 +24,6 @@ const FLOWS: Record<Language, {
     corporate: { label: 'Doanh nghiệp Nhật', sub: 'Tuyển dụng & phái cử nhân lực nước ngoài', icon: '🏢' },
     candidate: { label: 'Tìm việc làm', sub: 'Tư vấn việc làm tại Nhật Bản', icon: '👤' },
     internal: { label: 'FAQ Nội bộ', sub: 'Dành cho nhân viên công ty', icon: '📋' },
-  },
-  en: {
-    corporate: { label: 'For Companies', sub: 'Foreign workforce recruitment & staffing', icon: '🏢' },
-    candidate: { label: 'Find a Job', sub: 'Job consulting in Japan', icon: '👤' },
-    internal: { label: 'Internal FAQ', sub: 'For company employees', icon: '📋' },
-  },
-  np: {
-    corporate: { label: 'कम्पनीहरूको लागि', sub: 'विदेशी कार्यबल भर्ती', icon: '🏢' },
-    candidate: { label: 'जागिर खोज्नुहोस्', sub: 'जापानमा रोजगार परामर्श', icon: '👤' },
-    internal: { label: 'आन्तरिक FAQ', sub: 'कम्पनी कर्मचारीहरूको लागि', icon: '📋' },
   },
 }
 

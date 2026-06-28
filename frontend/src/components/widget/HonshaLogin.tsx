@@ -10,43 +10,31 @@ interface Props {
 const TITLE: Record<Language, string> = {
   jp: '本社スタッフ専用',
   vi: 'Dành cho nhân viên Honsha',
-  en: 'Honsha Staff Only',
-  np: 'Honsha कर्मचारीहरूको लागि',
 }
 
 const SUBTITLE: Record<Language, string> = {
   jp: 'アクセスコードを入力してください',
   vi: 'Nhập mã truy cập của bạn',
-  en: 'Enter your access code',
-  np: 'पहुँच कोड प्रविष्ट गर्नुहोस्',
 }
 
 const PLACEHOLDER: Record<Language, string> = {
   jp: 'アクセスコード',
   vi: 'Mã truy cập',
-  en: 'Access code',
-  np: 'पहुँच कोड',
 }
 
 const BTN: Record<Language, string> = {
   jp: '入力する',
   vi: 'Xác nhận',
-  en: 'Confirm',
-  np: 'पुष्टि गर्नुहोस्',
 }
 
 const ERR_WRONG: Record<Language, string> = {
   jp: 'コードが正しくありません。もう一度お試しください。',
   vi: 'Mã không đúng. Vui lòng thử lại.',
-  en: 'Incorrect code. Please try again.',
-  np: 'कोड गलत छ। फेरि प्रयास गर्नुहोस्।',
 }
 
 const ERR_NET: Record<Language, string> = {
   jp: '接続エラーが発生しました。もう一度お試しください。',
   vi: 'Lỗi kết nối. Vui lòng thử lại.',
-  en: 'Connection error. Please try again.',
-  np: 'जडान त्रुटि। फेरि प्रयास गर्नुहोस्।',
 }
 
 export function HonshaLogin({ language, onSuccess }: Props) {

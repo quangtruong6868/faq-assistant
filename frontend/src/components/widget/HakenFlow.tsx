@@ -12,15 +12,11 @@ interface Props {
 const WELCOME: Record<Language, string> = {
   jp: '派遣スタッフ向けFAQです。\nお困りのことをご自由にご質問ください。',
   vi: 'FAQ dành cho nhân viên Haken (派遣).\nBạn có thắc mắc gì cứ hỏi nhé!',
-  en: 'FAQ for dispatched (Haken) staff.\nFeel free to ask any questions.',
-  np: 'Haken कर्मचारीहरूको FAQ।\nजे प्रश्न छ सोध्नुहोस्।',
 }
 
 const QUICK: Record<Language, string[]> = {
   jp: ['給与の計算方法', '休憩・休日について', '通勤交通費の申請', '勤務シフトの変更', '緊急連絡先'],
   vi: ['Cách tính lương', 'Quy định nghỉ phép', 'Hoàn tiền đi lại', 'Đổi ca làm việc', 'Liên hệ khẩn cấp'],
-  en: ['How is salary calculated?', 'Days off & holidays', 'Commuting reimbursement', 'Shift changes', 'Emergency contacts'],
-  np: ['तलब कसरी गणना हुन्छ?', 'बिदाका नियमहरू', 'यातायात भत्ता', 'सिफ्ट परिवर्तन', 'आपतकालीन सम्पर्क'],
 }
 
 const FORM_LABELS: Record<Language, Record<string, string>> = {
@@ -53,36 +49,6 @@ const FORM_LABELS: Record<Language, Record<string, string>> = {
     skip: 'Bỏ qua',
     done_title: '✅ Đã nhận thông tin!',
     done_sub: 'Quản lý sẽ liên hệ lại với bạn sớm.',
-  },
-  en: {
-    title: 'This question needs further confirmation.',
-    sub: 'Leave your contact so the manager can follow up with you.',
-    factory: 'Factory / Company name *',
-    name: 'Full Name *',
-    phone: 'Phone *',
-    facebook: 'Facebook',
-    line: 'LINE ID',
-    email: 'Email',
-    submit: 'Send',
-    sending: 'Sending...',
-    skip: 'Skip',
-    done_title: '✅ Got it!',
-    done_sub: 'Your manager will get back to you shortly.',
-  },
-  np: {
-    title: 'यो प्रश्नको थप पुष्टि चाहिन्छ।',
-    sub: 'सम्पर्क जानकारी छाड्नुहोस् — व्यवस्थापक सम्पर्क गर्नेछन्।',
-    factory: 'कारखाना / कम्पनी नाम *',
-    name: 'पूरा नाम *',
-    phone: 'फोन *',
-    facebook: 'Facebook',
-    line: 'LINE ID',
-    email: 'इमेल',
-    submit: 'पठाउनुहोस्',
-    sending: 'पठाउँदै...',
-    skip: 'छोड्नुहोस्',
-    done_title: '✅ प्राप्त भयो!',
-    done_sub: 'व्यवस्थापकले चाँडै सम्पर्क गर्नेछन्।',
   },
 }
 
@@ -152,7 +118,7 @@ function HakenNoMatchForm({ question, language, onDismiss }: {
 export function HakenFlow({ language }: Props) {
   const { messages, isLoading, sendMessage, lastNoMatch, clearNoMatch } = useChat(language, 'haken')
   const bottomRef = useRef<HTMLDivElement>(null)
-  const [quickShown, setQuickShown] = useState(true)
+  const [quickShown] = useState(false)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -180,7 +146,7 @@ export function HakenFlow({ language }: Props) {
         {quickShown && messages.length === 0 && (
           <div className="flex flex-col gap-1.5 pl-10">
             {(QUICK[language] || QUICK.vi).map(t => (
-              <button key={t} onClick={() => { sendMessage(t); setQuickShown(false) }}
+              <button key={t} onClick={() => { sendMessage(t) }}
                 className="text-left px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-600 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-all active:scale-[0.98]">
                 {t}
               </button>
@@ -196,12 +162,14 @@ export function HakenFlow({ language }: Props) {
                 <img src="/th-logo.jpg" alt="TH" className="w-full h-full object-contain" />
               </div>
             )}
-            <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-line leading-relaxed ${
-              msg.role === 'user'
-                ? 'bg-blue-600 text-white rounded-tr-sm'
-                : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-sm'
-            }`}>
-              {msg.content}
+            <div className={`flex flex-col gap-1.5 max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+              <div className={`px-4 py-3 rounded-2xl text-sm whitespace-pre-line leading-relaxed ${
+                msg.role === 'user'
+                  ? 'bg-blue-600 text-white rounded-tr-sm'
+                  : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-sm'
+              }`}>
+                {msg.content}
+              </div>
             </div>
           </div>
         ))}

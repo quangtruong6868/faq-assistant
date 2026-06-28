@@ -8,8 +8,6 @@ interface Props {
 const TITLE: Record<Language, string> = {
   jp: '社内FAQへようこそ。\nご所属をお選びください。',
   vi: 'Chào mừng đến FAQ Nội bộ.\nVui lòng chọn nhóm của bạn:',
-  en: 'Welcome to Internal FAQ.\nPlease select your group:',
-  np: 'आन्तरिक FAQ मा स्वागत छ।\nआफ्नो समूह छान्नुहोस्:',
 }
 
 const OPTIONS: Record<Language, {
@@ -23,14 +21,6 @@ const OPTIONS: Record<Language, {
   vi: {
     honsha: { label: 'Nhân viên Honsha (本社)', sub: 'Nhân viên văn phòng tại công ty' },
     haken: { label: 'Nhân viên Haken (派遣)', sub: 'Nhân viên đang phái cử tại xưởng/nhà máy' },
-  },
-  en: {
-    honsha: { label: 'Honsha Staff (本社)', sub: 'Office staff at headquarters' },
-    haken: { label: 'Haken Staff (派遣)', sub: 'Dispatched workers at factories' },
-  },
-  np: {
-    honsha: { label: 'Honsha कर्मचारी (本社)', sub: 'मुख्यालयका कार्यालय कर्मचारी' },
-    haken: { label: 'Haken कर्मचारी (派遣)', sub: 'कारखानामा खटाइएका कर्मचारी' },
   },
 }
 

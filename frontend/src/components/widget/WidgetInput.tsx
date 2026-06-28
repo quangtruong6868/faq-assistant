@@ -10,8 +10,6 @@ interface Props {
 const PLACEHOLDER: Record<Language, string> = {
   vi: 'Nhập câu hỏi...',
   jp: '質問を入力...',
-  en: 'Type your question...',
-  np: 'प्रश्न टाइप गर्नुहोस्...',
 }
 
 export function WidgetInput({ language, isLoading, onSend }: Props) {

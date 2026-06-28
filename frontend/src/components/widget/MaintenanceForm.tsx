@@ -11,36 +11,26 @@ interface Props {
 const NOTICE: Record<Language, string> = {
   jp: 'このチャット機能は現在アップグレード中です。\nご不便をおかけして申し訳ございません。\n\n以下に連絡先をご記入いただければ、担当者よりご連絡いたします。',
   vi: 'Tính năng chat này đang được nâng cấp.\nXin lỗi vì sự bất tiện này.\n\nVui lòng để lại thông tin bên dưới, chúng tôi sẽ liên hệ lại với bạn sớm nhất.',
-  en: 'This chat feature is currently being upgraded.\nWe apologize for the inconvenience.\n\nPlease leave your contact details below and we\'ll get back to you.',
-  np: 'यो च्याट सुविधा हाल अपग्रेड भइरहेको छ।\nअसुविधाको लागि माफ गर्नुहोस्।\n\nतलको सम्पर्क जानकारी छाड्नुहोस् र हामी सम्पर्क गर्नेछौं।',
 }
 
 const THANK_YOU: Record<Language, string> = {
   jp: 'ありがとうございます！担当者より2営業日以内にご連絡いたします。',
   vi: 'Cảm ơn bạn! Chúng tôi sẽ liên hệ lại trong 2 ngày làm việc.',
-  en: 'Thank you! We\'ll contact you within 2 business days.',
-  np: 'धन्यवाद! हामी २ कार्य दिनभित्र सम्पर्क गर्नेछौं।',
 }
 
 const LABELS_CORPORATE: Record<Language, Record<string, string>> = {
   jp: { title: '担当者へのお問い合わせ', company: '会社名 *', contact: '担当者名 *', phone: '電話番号 *', email: 'メール', submit: '送信する', sending: '送信中...' },
   vi: { title: 'Liên hệ tư vấn viên', company: 'Tên công ty *', contact: 'Người liên hệ *', phone: 'Số điện thoại *', email: 'Email', submit: 'Gửi thông tin', sending: 'Đang gửi...' },
-  en: { title: 'Contact our consultant', company: 'Company Name *', contact: 'Contact Person *', phone: 'Phone *', email: 'Email', submit: 'Submit', sending: 'Sending...' },
-  np: { title: 'सल्लाहकारसँग सम्पर्क', company: 'कम्पनी नाम *', contact: 'सम्पर्क व्यक्ति *', phone: 'फोन *', email: 'इमेल', submit: 'पठाउनुहोस्', sending: 'पठाउँदै...' },
 }
 
 const LABELS_CANDIDATE: Record<Language, Record<string, string>> = {
   vi: { title: 'Để lại thông tin liên hệ', name: 'Họ tên *', phone: 'Số điện thoại *', line: 'LINE ID', email: 'Email', submit: 'Gửi thông tin', sending: 'Đang gửi...' },
   jp: { title: '連絡先情報を残す', name: 'お名前 *', phone: '電話番号 *', line: 'LINE ID', email: 'メール', submit: '送信する', sending: '送信中...' },
-  en: { title: 'Leave your contact info', name: 'Full Name *', phone: 'Phone *', line: 'LINE ID', email: 'Email', submit: 'Submit', sending: 'Sending...' },
-  np: { title: 'सम्पर्क जानकारी छाड्नुहोस्', name: 'पूरा नाम *', phone: 'फोन *', line: 'LINE ID', email: 'इमेल', submit: 'पठाउनुहोस्', sending: 'पठाउँदै...' },
 }
 
 const LABELS_HAKEN: Record<Language, Record<string, string>> = {
   jp: { title: '担当者へのお問い合わせ', factory: '派遣先工場・会社名 *', name: 'お名前 *', phone: '電話番号 *', line: 'LINE ID', email: 'メール', submit: '送信する', sending: '送信中...' },
   vi: { title: 'Liên hệ quản lý', factory: 'Tên nhà máy / công ty *', name: 'Họ tên *', phone: 'Số điện thoại *', line: 'LINE ID', email: 'Email', submit: 'Gửi thông tin', sending: 'Đang gửi...' },
-  en: { title: 'Contact your manager', factory: 'Factory / Company *', name: 'Full Name *', phone: 'Phone *', line: 'LINE ID', email: 'Email', submit: 'Submit', sending: 'Sending...' },
-  np: { title: 'व्यवस्थापकसँग सम्पर्क', factory: 'कारखाना / कम्पनी *', name: 'पूरा नाम *', phone: 'फोन *', line: 'LINE ID', email: 'इमेल', submit: 'पठाउनुहोस्', sending: 'पठाउँदै...' },
 }
 
 export function MaintenanceForm({ language, siteKey, flow }: Props) {

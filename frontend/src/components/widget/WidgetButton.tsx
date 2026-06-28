@@ -9,8 +9,6 @@ interface Props {
 const LABEL: Record<Language, string> = {
   vi: 'Tư vấn TH-GROUP',
   jp: 'TH-GROUPに相談する',
-  en: 'Chat with TH-GROUP',
-  np: 'TH-GROUP सँग कुरा गर्नुहोस्',
 }
 
 export function WidgetButton({ onClick, language, hasUnread }: Props) {

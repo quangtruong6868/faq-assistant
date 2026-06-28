@@ -6,6 +6,7 @@ import { FlowSelector } from './FlowSelector'
 import { InternalSelector } from './InternalSelector'
 import { HonshaFlow } from './HonshaFlow'
 import { HonshaLogin } from './HonshaLogin'
+import { HakenFlow } from './HakenFlow'
 import { MaintenanceForm } from './MaintenanceForm'
 
 interface Props {
@@ -83,7 +84,7 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
               )}
 
               {view === 'haken_chat' && (
-                <MaintenanceForm language={language} siteKey={siteKey} flow="haken" />
+                <HakenFlow language={language} />
               )}
 
               {view === 'internal_selector' && (
@@ -98,6 +99,7 @@ export function ChatWidget({ siteKey = 'th-group' }: Props) {
 
               {(view === 'honsha_dept' || view === 'honsha_chat') && (
                 <HonshaFlow
+                  language={language}
                   selectedDepartment={view === 'honsha_chat' ? selectedDepartment : null}
                   onSelectDepartment={selectDepartment}
                 />

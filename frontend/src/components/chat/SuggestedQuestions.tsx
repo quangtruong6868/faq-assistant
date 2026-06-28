@@ -20,20 +20,6 @@ const SUGGESTIONS: Record<Language, string[]> = {
     '問題がある場合は誰に連絡しますか？',
     '退職の申請方法は？',
   ],
-  en: [
-    'How do I apply for leave?',
-    'When is payday?',
-    'What if I forgot to clock in?',
-    'Who should I contact for issues?',
-    'How to resign?',
-  ],
-  np: [
-    'बिदा कसरी लिने?',
-    'तलब कहिले पाइन्छ?',
-    'हाजिरी बिर्से के गर्ने?',
-    'समस्या भएमा कसलाई सम्पर्क गर्ने?',
-    'राजीनामा कसरी दिने?',
-  ],
 }
 
 export function SuggestedQuestions({ language, onSelect }: Props) {

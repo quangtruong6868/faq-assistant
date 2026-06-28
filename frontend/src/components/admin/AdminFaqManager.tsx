@@ -6,18 +6,14 @@ interface FaqFormData {
   category_id: string
   question_vi: string
   question_jp: string
-  question_en: string
-  question_np: string
   answer_vi: string
   answer_jp: string
-  answer_en: string
-  answer_np: string
 }
 
 const EMPTY_FORM: FaqFormData = {
   category_id: '',
-  question_vi: '', question_jp: '', question_en: '', question_np: '',
-  answer_vi: '', answer_jp: '', answer_en: '', answer_np: '',
+  question_vi: '', question_jp: '',
+  answer_vi: '', answer_jp: '',
 }
 
 export function AdminFaqManager() {
@@ -28,7 +24,7 @@ export function AdminFaqManager() {
   const [saving, setSaving] = useState(false)
   const [filterCategory, setFilterCategory] = useState('')
   const [search, setSearch] = useState('')
-  const [activeLang, setActiveLang] = useState<'vi' | 'jp' | 'en' | 'np'>('vi')
+  const [activeLang, setActiveLang] = useState<'vi' | 'jp'>('vi')
 
   const openCreate = () => {
     setEditItem(null)
@@ -42,12 +38,8 @@ export function AdminFaqManager() {
       category_id: item.category_id,
       question_vi: item.question_vi,
       question_jp: item.question_jp || '',
-      question_en: item.question_en || '',
-      question_np: item.question_np || '',
       answer_vi: item.answer_vi,
       answer_jp: item.answer_jp || '',
-      answer_en: item.answer_en || '',
-      answer_np: item.answer_np || '',
     })
     setShowForm(true)
   }
@@ -79,8 +71,8 @@ export function AdminFaqManager() {
     return matchCat && matchSearch
   })
 
-  const LANGS = ['vi', 'jp', 'en', 'np'] as const
-  const LANG_LABELS = { vi: 'VI', jp: 'JP', en: 'EN', np: 'NP' }
+  const LANGS = ['vi', 'jp'] as const
+  const LANG_LABELS = { vi: 'VI', jp: 'JP' }
 
   return (
     <div className="p-6">

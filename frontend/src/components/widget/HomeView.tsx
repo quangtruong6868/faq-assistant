@@ -11,22 +11,16 @@ interface Props {
 const WELCOME: Record<Language, string> = {
   vi: 'Xin chào! 👋 Tôi có thể giúp gì cho bạn?',
   jp: 'こんにちは！👋 何かお手伝いできますか？',
-  en: 'Hello! 👋 How can I help you?',
-  np: 'नमस्ते! 👋 म तपाईंलाई कसरी मद्दत गर्न सक्छु?',
 }
 
 const CHOOSE_TOPIC: Record<Language, string> = {
   vi: 'Chọn chủ đề để xem câu hỏi thường gặp:',
   jp: 'トピックを選んでください:',
-  en: 'Choose a topic to see FAQs:',
-  np: 'FAQ हेर्न विषय छान्नुहोस्:',
 }
 
 const OR_TYPE: Record<Language, string> = {
   vi: 'Hoặc nhập câu hỏi của bạn bên dưới',
   jp: 'または下に質問を入力してください',
-  en: 'Or type your question below',
-  np: 'वा तलमा आफ्नो प्रश्न टाइप गर्नुहोस्',
 }
 
 export function HomeView({ language, categories, loading, onSelectCategory }: Props) {

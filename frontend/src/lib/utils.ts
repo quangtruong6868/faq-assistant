@@ -9,45 +9,33 @@ export function cn(...inputs: ClassValue[]) {
 export const LANGUAGE_LABELS: Record<Language, string> = {
   vi: '🇻🇳 VI',
   jp: '🇯🇵 JP',
-  en: '🇬🇧 EN',
-  np: '🇳🇵 NP',
 }
 
 export const LANGUAGE_FULL_LABELS: Record<Language, string> = {
   vi: '🇻🇳 Tiếng Việt',
   jp: '🇯🇵 日本語',
-  en: '🇬🇧 English',
-  np: '🇳🇵 नेपाली',
 }
 
 // Tự động detect ngôn ngữ từ trình duyệt
 export function detectBrowserLanguage(): Language {
   const lang = navigator.language?.toLowerCase() || ''
   if (lang.startsWith('ja')) return 'jp'
-  if (lang.startsWith('ne')) return 'np'
-  if (lang.startsWith('en')) return 'en'
   return 'vi' // default
 }
 
 export const NO_INFO_MESSAGE: Record<Language, string> = {
   vi: 'Hệ thống đang được nâng cấp. Vui lòng để lại thông tin để được hỗ trợ.',
   jp: 'システムはアップグレード中です。以下から情報をお残しください。',
-  en: 'The system is currently being upgraded. Please leave your contact info below.',
-  np: 'प्रणाली अपग्रेड भइरहेको छ। तलको जानकारी छाड्नुहोस्।',
 }
 
 export const PRIVATE_INFO_TOPICS = [
   'lương cá nhân', 'hợp đồng cá nhân', 'visa cá nhân', 'thông tin cá nhân',
   '個人の給与', '個人の契約', '個人のビザ',
-  'personal salary', 'personal contract', 'personal visa',
-  'व्यक्तिगत तलब', 'व्यक्तिगत सम्झौता',
 ]
 
 export const PRIVATE_INFO_RESPONSE: Record<Language, string> = {
   vi: 'Vui lòng liên hệ người phụ trách để được hỗ trợ về thông tin cá nhân.',
   jp: '個人情報については、担当者にお問い合わせください。',
-  en: 'Please contact the person in charge for assistance with personal information.',
-  np: 'व्यक्तिगत जानकारीको लागि कृपया सम्बन्धित व्यक्तिलाई सम्पर्क गर्नुहोस्।',
 }
 
 export function isPrivateInfoQuery(question: string): boolean {

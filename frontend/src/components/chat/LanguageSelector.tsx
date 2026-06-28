@@ -6,7 +6,7 @@ interface Props {
   onChange: (lang: Language) => void
 }
 
-const LANGUAGES: Language[] = ['vi', 'jp', 'en', 'np']
+const LANGUAGES: Language[] = ['vi', 'jp']
 
 export function LanguageSelector({ value, onChange }: Props) {
   return (

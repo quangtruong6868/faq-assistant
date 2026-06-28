@@ -13,36 +13,26 @@ interface Props {
 const WELCOME: Record<Language, string> = {
   vi: 'Xin chào! Tôi là tư vấn viên việc làm của TH-GROUP.\nTôi sẽ giúp bạn tìm việc phù hợp tại Nhật Bản — từ visa, lương, điều kiện đến thủ tục.\n\nBạn đang quan tâm đến loại công việc nào?',
   jp: 'こんにちは！TH-GROUPのキャリアアドバイザーです。\n日本でのお仕事探しをサポートします。ビザ・給与・仕事内容など何でも聞いてください。\n\nどのようなお仕事に興味がありますか？',
-  en: 'Hello! I\'m a career advisor from TH-GROUP.\nI\'ll help you find the right job in Japan — visas, salary, conditions and more.\n\nWhat type of work are you interested in?',
-  np: 'नमस्ते! म TH-GROUP को क्यारियर सल्लाहकार हुँ।\nजापानमा सही काम खोज्न मद्दत गर्छु — भिसा, तलब, सर्तहरू।\n\nकस्तो काममा रुचि छ?',
 }
 
 const QUICK_TOPICS: Record<Language, string[]> = {
   vi: ['Điều kiện visa 特定技能 là gì?', 'Lương công nhân nhà máy bao nhiêu?', 'Tiếng Nhật cần trình độ gì?', 'Không có visa có làm được không?', 'TH-GROUP hỗ trợ những gì?', 'Kỹ sư IT sang Nhật cần gì?'],
   jp: ['特定技能ビザの条件は？', '工場の給与は？', '日本語レベルは必要？', 'TH-GROUPのサポート内容は？', 'ITエンジニアの就職は？'],
-  en: ['What are Tokutei Ginou visa requirements?', 'What\'s the salary for factory workers?', 'What Japanese level do I need?', 'What support does TH-GROUP offer?', 'How to get an IT job in Japan?'],
-  np: ['विशेष कौशल भिसा शर्तहरू?', 'कारखाना तलब कति?', 'जापानी भाषा स्तर?', 'TH-GROUP ले के सहयोग गर्छ?'],
 }
 
 const CONTACT_BTN: Record<Language, string> = {
   vi: '📋 Để lại thông tin — tư vấn viên sẽ liên hệ bạn',
   jp: '📋 情報を残す — アドバイザーよりご連絡します',
-  en: '📋 Leave your info — our advisor will contact you',
-  np: '📋 जानकारी छाड्नुहोस् — सल्लाहकार सम्पर्क गर्नेछ',
 }
 
 const FORM_LABELS: Record<Language, Record<string, string>> = {
   vi: { title: 'Thông tin liên hệ', name: 'Họ tên *', phone: 'Số điện thoại *', line_id: 'LINE ID', email: 'Email', facebook: 'Facebook', submit: 'Gửi', sending: 'Đang gửi...' },
   jp: { title: '連絡先情報', name: 'お名前 *', phone: '電話番号 *', line_id: 'LINE ID', email: 'メール', facebook: 'Facebook', submit: '送信する', sending: '送信中...' },
-  en: { title: 'Contact Info', name: 'Full Name *', phone: 'Phone *', line_id: 'LINE ID', email: 'Email', facebook: 'Facebook', submit: 'Submit', sending: 'Sending...' },
-  np: { title: 'सम्पर्क जानकारी', name: 'पूरा नाम *', phone: 'फोन *', line_id: 'LINE ID', email: 'इमेल', facebook: 'Facebook', submit: 'पठाउनुहोस्', sending: 'पठाउँदै...' },
 }
 
 const THANK_YOU: Record<Language, string> = {
   vi: 'Cảm ơn bạn! Tư vấn viên sẽ liên hệ trong 2 ngày làm việc.',
   jp: 'ありがとうございます！2営業日以内にご連絡いたします。',
-  en: 'Thank you! Our advisor will contact you within 2 business days.',
-  np: 'धन्यवाद! सल्लाहकार २ कार्य दिनभित्र सम्पर्क गर्नेछ।',
 }
 
 export function CandidateFlow({ language, siteKey }: Props) {
@@ -99,12 +89,14 @@ export function CandidateFlow({ language, siteKey }: Props) {
                 <img src="/th-logo.jpg" alt="TH" className="w-full h-full object-contain" />
               </div>
             )}
-            <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-line leading-relaxed ${
-              msg.role === 'user'
-                ? 'bg-red-600 text-white rounded-tr-sm'
-                : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-sm'
-            }`}>
-              {msg.content}
+            <div className={`flex flex-col gap-1.5 max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+              <div className={`px-4 py-3 rounded-2xl text-sm whitespace-pre-line leading-relaxed ${
+                msg.role === 'user'
+                  ? 'bg-red-600 text-white rounded-tr-sm'
+                  : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-sm'
+              }`}>
+                {msg.content}
+              </div>
             </div>
           </div>
         ))}

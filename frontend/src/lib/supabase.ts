@@ -5,7 +5,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-export type Language = 'vi' | 'jp' | 'en' | 'np'
+export type Language = 'vi' | 'jp'
 
 export interface FaqCategory {
   id: string
@@ -55,6 +55,8 @@ export interface ChatMessage {
   source?: string
   source_detail?: string
   suggestions?: string[]
+  question?: string            // original user question (stored on bot reply for feedback)
+  learned_id?: string          // id in learned_knowledge if served from there
   timestamp: Date
 }
 

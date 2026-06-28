@@ -75,7 +75,7 @@ export function useFaqItems() {
 export async function extractXlsxChunks(file: File): Promise<string[]> {
   try {
     const buf = await file.arrayBuffer()
-    const wb = XLSX.read(buf, { type: 'array', sheetRows: 1001, dense: true })
+    const wb = XLSX.read(buf, { type: 'array', dense: true })
     const chunks: string[] = []
     for (const sheetName of wb.SheetNames) {
       // Skip instruction/template sheets
@@ -90,7 +90,7 @@ export async function extractXlsxChunks(file: File): Promise<string[]> {
         const qIdx = headers.findIndex(h => /cau.hoi|question|質問|câu hỏi/i.test(h))
         const aIdx = headers.findIndex(h => /tra.loi|answer|回答|trả lời/i.test(h))
 
-        for (let i = 1; i < Math.min(rows.length, 1001); i++) {
+        for (let i = 1; i < rows.length; i++) {
           const row = rows[i]
           if (!Array.isArray(row)) continue
           let chunk: string
@@ -233,11 +233,19 @@ export function useDocuments() {
           console.log('[embed-bg] text length:', text.length)
           chunks = chunkText(text)
         }
-        console.log('[embed-bg] chunks:', chunks.length, '— calling edge function...')
-        const { error } = await supabase.functions.invoke('embed-document', {
-          body: { document_id: docId, chunks, flow },
-        })
-        console.log('[embed-bg] done. error:', error)
+        console.log('[embed-bg] chunks:', chunks.length, '— calling edge function in batches...')
+        // Split into batches of 300 to avoid edge function timeout on large files
+        const BATCH_SIZE = 300
+        for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
+          const batchChunks = chunks.slice(i, i + BATCH_SIZE)
+          const isFirst = i === 0
+          const { error } = await supabase.functions.invoke('embed-document', {
+            body: { document_id: docId, chunks: batchChunks, flow, append: !isFirst },
+          })
+          if (error) { console.error('[embed-bg] batch error at', i, error); break }
+          console.log(`[embed-bg] batch ${i}-${i + batchChunks.length} done`)
+        }
+        console.log('[embed-bg] all batches done')
       } catch (e) {
         console.error('[embed-bg] error:', e)
       }

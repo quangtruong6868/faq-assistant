@@ -2,12 +2,14 @@ import { useState, useRef } from 'react'
 import { useDocuments, reEmbedDocument } from '../../hooks/useAdmin'
 import type { Document } from '../../lib/supabase'
 
-type Flow = 'internal' | 'corporate' | 'candidate'
+type Flow = 'internal' | 'corporate' | 'candidate' | 'honsha' | 'haken'
 
 const FLOW_OPTIONS: { value: Flow; label: string; desc: string }[] = [
-  { value: 'internal', label: '📋 Nội bộ', desc: 'Quy định, chính sách công ty cho nhân viên' },
-  { value: 'corporate', label: '🏢 Doanh nghiệp', desc: 'Kiến thức tuyển dụng ngoại lao động, visa, quy trình' },
-  { value: 'candidate', label: '👤 Người tìm việc', desc: 'Thông tin visa, lương, điều kiện làm việc tại Nhật' },
+  { value: 'internal',  label: '📋 Nội bộ chung',    desc: 'Tài liệu dùng chung cho toàn bộ nhân viên nội bộ' },
+  { value: 'honsha',    label: '🏢 Honsha (本社)',    desc: 'Tài liệu riêng cho nhân viên Honsha — quy định, nội quy bản địa' },
+  { value: 'haken',     label: '🏭 Haken (派遣)',     desc: 'Tài liệu riêng cho nhân viên Haken — nội quy phái cử' },
+  { value: 'corporate', label: '💼 Doanh nghiệp',     desc: 'Kiến thức tuyển dụng ngoại lao động, visa, quy trình' },
+  { value: 'candidate', label: '👤 Người tìm việc',   desc: 'Thông tin visa, lương, điều kiện làm việc tại Nhật' },
 ]
 
 const STATUS_LABELS: Record<Document['status'], { label: string; color: string }> = {
@@ -23,12 +25,15 @@ const FILE_ICONS: Record<string, string> = {
 
 const FLOW_BADGE: Record<string, string> = {
   internal:  'bg-gray-100 text-gray-600',
-  corporate: 'bg-red-50 text-red-700',
-  candidate: 'bg-blue-50 text-blue-700',
+  honsha:    'bg-red-100 text-red-800',
+  haken:     'bg-blue-100 text-blue-800',
+  corporate: 'bg-orange-50 text-orange-700',
+  candidate: 'bg-purple-50 text-purple-700',
 }
 
 const FLOW_LABEL: Record<string, string> = {
-  internal: 'Nội bộ', corporate: 'Doanh nghiệp', candidate: 'Người tìm việc',
+  internal: 'Nội bộ chung', honsha: 'Honsha', haken: 'Haken',
+  corporate: 'Doanh nghiệp', candidate: 'Người tìm việc',
 }
 
 export function AdminDocuments() {
@@ -143,7 +148,7 @@ export function AdminDocuments() {
 
       {/* Filter */}
       <div className="flex gap-2">
-        {(['all', 'internal', 'corporate', 'candidate'] as const).map(f => (
+        {(['all', 'internal', 'honsha', 'haken', 'corporate', 'candidate'] as const).map(f => (
           <button key={f} onClick={() => setFilterFlow(f)}
             className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
               filterFlow === f ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'

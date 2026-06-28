@@ -1,31 +1,41 @@
 import { useRef, useEffect } from 'react'
+import type { Language } from '../../lib/supabase'
 import type { Department } from '../../hooks/useWidget'
 import { useChat } from '../../hooks/useChat'
 import { WidgetInput } from './WidgetInput'
 import { NoMatchContactForm } from './NoMatchContactForm'
 
 interface Props {
+  language: Language
   selectedDepartment: Department | null
   onSelectDepartment: (dept: Department) => void
 }
 
 const DEPARTMENTS: Department[] = [
-  { jp: '申請業務', vi: 'Nghiệp vụ thủ tục visa' },
-  { jp: '営業事務', vi: 'Nghiệp vụ kinh doanh' },
-  { jp: '勤怠事務', vi: 'Nghiệp vụ chấm công' },
-  { jp: '経理事務', vi: 'Nghiệp vụ kế toán' },
-  { jp: '総務事務', vi: 'Nghiệp vụ tổng hợp' },
-  { jp: '労務管理', vi: 'Quản lý lao động' },
-  { jp: '営業部', vi: 'Phòng kinh doanh' },
+  { jp: '申請業務',  vi: 'Nghiệp vụ thủ tục visa' },
+  { jp: '営業事務',  vi: 'Nghiệp vụ kinh doanh' },
+  { jp: '勤怠事務',  vi: 'Nghiệp vụ chấm công' },
+  { jp: '経理事務',  vi: 'Nghiệp vụ kế toán' },
+  { jp: '総務事務',  vi: 'Nghiệp vụ tổng hợp' },
+  { jp: '労務管理',  vi: 'Quản lý lao động' },
+  { jp: '営業部',   vi: 'Phòng kinh doanh' },
   { jp: '求人チーム', vi: 'Team tuyển dụng' },
+  { jp: '就業規則',  vi: 'Nội quy công ty' },
 ]
 
-const WELCOME_DEPT = 'ようこそ！TH-GROUP本社FAQへ。\n担当部署を選択してください。'
-const WELCOME_CHAT = (dept: string) => `${dept}についてのご質問をどうぞ。\n資料に基づいてお答えします。`
+const WELCOME_DEPT: Record<Language, string> = {
+  jp: 'ようこそ！TH-GROUP本社FAQへ。\n担当部署を選択してください。',
+  vi: 'Chào mừng đến FAQ Honsha TH-GROUP!\nChọn bộ phận bạn muốn hỏi.',
+}
 
-export function HonshaFlow({ selectedDepartment, onSelectDepartment }: Props) {
+const WELCOME_CHAT: Record<Language, (dept: string, deptVi: string) => string> = {
+  jp: (dept) => `${dept}についてのご質問をどうぞ。\n資料に基づいてお答えします。`,
+  vi: (_, deptVi) => `Bạn có câu hỏi gì về **${deptVi}**?\nMình sẽ trả lời dựa trên tài liệu có sẵn.`,
+}
+
+export function HonshaFlow({ language, selectedDepartment, onSelectDepartment }: Props) {
   const { messages, isLoading, sendMessage, lastNoMatch, clearNoMatch } =
-    useChat('jp', 'honsha', { department: selectedDepartment?.jp })
+    useChat(language, 'honsha', { department: selectedDepartment?.jp })
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -41,7 +51,7 @@ export function HonshaFlow({ selectedDepartment, onSelectDepartment }: Props) {
             <img src="/th-logo.jpg" alt="TH" className="w-full h-full object-contain" />
           </div>
           <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]">
-            <p className="text-sm text-gray-800 whitespace-pre-line">{WELCOME_DEPT}</p>
+            <p className="text-sm text-gray-800 whitespace-pre-line">{WELCOME_DEPT[language]}</p>
           </div>
         </div>
 
@@ -80,7 +90,7 @@ export function HonshaFlow({ selectedDepartment, onSelectDepartment }: Props) {
             <img src="/th-logo.jpg" alt="TH" className="w-full h-full object-contain" />
           </div>
           <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-tl-sm px-4 py-3 max-w-[85%]">
-            <p className="text-sm text-gray-800 whitespace-pre-line">{WELCOME_CHAT(selectedDepartment.jp)}</p>
+            <p className="text-sm text-gray-800 whitespace-pre-line">{WELCOME_CHAT[language](selectedDepartment.jp, selectedDepartment.vi)}</p>
           </div>
         </div>
 
@@ -100,17 +110,6 @@ export function HonshaFlow({ selectedDepartment, onSelectDepartment }: Props) {
               }`}>
                 {msg.content}
               </div>
-              {msg.role === 'assistant' && msg.suggestions && msg.suggestions.length > 0 && (
-                <div className="flex flex-col gap-1">
-                  <p className="text-[10px] text-gray-400">関連する質問:</p>
-                  {msg.suggestions.map((s, i) => (
-                    <button key={i} onClick={() => sendMessage(s)}
-                      className="text-left text-xs text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 rounded-xl px-3 py-1.5 transition-colors">
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         ))}
@@ -133,7 +132,7 @@ export function HonshaFlow({ selectedDepartment, onSelectDepartment }: Props) {
         {lastNoMatch && (
           <NoMatchContactForm
             question={lastNoMatch}
-            language="jp"
+            language={language}
             flow="honsha"
             onDismiss={clearNoMatch}
           />
@@ -142,7 +141,7 @@ export function HonshaFlow({ selectedDepartment, onSelectDepartment }: Props) {
         <div ref={bottomRef} />
       </div>
 
-      <WidgetInput language="jp" isLoading={isLoading} onSend={sendMessage} />
+      <WidgetInput language={language} isLoading={isLoading} onSend={sendMessage} />
     </div>
   )
 }

@@ -47,6 +47,8 @@ export function useChat(language: Language, flow: FlowType = 'internal', options
           language,
           source: data.source,
           suggestions: data.suggestions || [],
+          question,
+          learned_id: data.learned_id,
         })
       }
 

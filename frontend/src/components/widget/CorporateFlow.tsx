@@ -13,36 +13,26 @@ interface Props {
 const WELCOME: Record<Language, string> = {
   jp: 'はじめまして！TH-GROUPの人材コンサルタントです。\n外国人材の採用・派遣・紹介についてなんでもご相談ください。\n\nどのようなことでお困りですか？',
   vi: 'Xin chào! Tôi là tư vấn viên nhân lực của TH-GROUP.\nMọi thắc mắc về tuyển dụng, phái cử, visa nhân lực nước ngoài — cứ hỏi tôi nhé!\n\nBạn đang cần tư vấn về vấn đề gì?',
-  en: 'Hello! I\'m a recruitment consultant from TH-GROUP.\nFeel free to ask me anything about hiring foreign workers, staffing, or visas!\n\nWhat can I help you with?',
-  np: 'नमस्ते! म TH-GROUP को मानव संसाधन सल्लाहकार हुँ।\nविदेशी कार्यकर्ता भर्ती बारे जे पनि सोध्नुहोस्!\n\nम कसरी मद्दत गर्न सक्छु?',
 }
 
 const QUICK_TOPICS: Record<Language, string[]> = {
   jp: ['外国人採用の流れを知りたい', 'ビザの種類と違いは？', '費用はどのくらい？', 'どんな職種に対応？', '採用までの期間は？'],
   vi: ['Quy trình tuyển dụng ngoại lao động', 'Phân biệt các loại visa', 'Chi phí khoảng bao nhiêu?', 'Ngành nghề nào phù hợp?', 'Mất bao lâu để có người?'],
-  en: ['How does the hiring process work?', 'What visa types are available?', 'What are the costs?', 'What industries do you cover?', 'How long does it take?'],
-  np: ['भर्ती प्रक्रिया कस्तो छ?', 'भिसाका प्रकारहरू', 'खर्च कति हुन्छ?', 'कुन उद्योगहरू?'],
 }
 
 const CONTACT_BTN: Record<Language, string> = {
   jp: '📞 担当者に直接相談する',
   vi: '📞 Để lại thông tin để được tư vấn trực tiếp',
-  en: '📞 Leave contact info for a direct consultation',
-  np: '📞 सम्पर्क जानकारी छाड्नुहोस्',
 }
 
 const FORM_LABELS: Record<Language, Record<string, string>> = {
   jp: { title: '担当者よりご連絡します', company: '会社名 *', contact: '担当者名 *', phone: '電話番号 *', email: 'メール', facebook: 'Facebook', submit: '送信する', sending: '送信中...' },
   vi: { title: 'Chúng tôi sẽ liên hệ lại', company: 'Tên công ty *', contact: 'Người liên hệ *', phone: 'Số điện thoại *', email: 'Email', facebook: 'Facebook', submit: 'Gửi', sending: 'Đang gửi...' },
-  en: { title: 'We\'ll get back to you', company: 'Company Name *', contact: 'Contact Person *', phone: 'Phone *', email: 'Email', facebook: 'Facebook', submit: 'Submit', sending: 'Sending...' },
-  np: { title: 'हामी सम्पर्क गर्नेछौं', company: 'कम्पनी नाम *', contact: 'सम्पर्क व्यक्ति *', phone: 'फोन *', email: 'इमेल', facebook: 'Facebook', submit: 'पठाउनुहोस्', sending: 'पठाउँदै...' },
 }
 
 const THANK_YOU: Record<Language, string> = {
   jp: 'ありがとうございます！2営業日以内にご連絡いたします。',
   vi: 'Cảm ơn! Chúng tôi sẽ liên hệ trong 2 ngày làm việc.',
-  en: 'Thank you! We\'ll contact you within 2 business days.',
-  np: 'धन्यवाद! हामी २ कार्य दिनभित्र सम्पर्क गर्नेछौं।',
 }
 
 export function CorporateFlow({ language, siteKey }: Props) {
@@ -111,12 +101,14 @@ export function CorporateFlow({ language, siteKey }: Props) {
                 <img src="/th-logo.jpg" alt="TH" className="w-full h-full object-contain" />
               </div>
             )}
-            <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-line leading-relaxed ${
-              msg.role === 'user'
-                ? 'bg-red-600 text-white rounded-tr-sm'
-                : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-sm'
-            }`}>
-              {msg.content}
+            <div className={`flex flex-col gap-1.5 max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+              <div className={`px-4 py-3 rounded-2xl text-sm whitespace-pre-line leading-relaxed ${
+                msg.role === 'user'
+                  ? 'bg-red-600 text-white rounded-tr-sm'
+                  : 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-sm'
+              }`}>
+                {msg.content}
+              </div>
             </div>
           </div>
         ))}

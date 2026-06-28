@@ -13,22 +13,16 @@ interface Props {
 const SELECT_QUESTION: Record<Language, string> = {
   vi: 'Chọn câu hỏi bạn muốn hỏi:',
   jp: '質問を選んでください:',
-  en: 'Select a question:',
-  np: 'प्रश्न छान्नुहोस्:',
 }
 
 const NO_ITEMS: Record<Language, string> = {
   vi: 'Chưa có câu hỏi nào trong danh mục này.',
   jp: 'このカテゴリにはまだ質問がありません。',
-  en: 'No questions in this category yet.',
-  np: 'यस श्रेणीमा अहिलेसम्म कुनै प्रश्न छैन।',
 }
 
 const OTHER_QUESTION: Record<Language, string> = {
   vi: 'Tự nhập câu hỏi khác →',
   jp: '別の質問を入力する →',
-  en: 'Type a different question →',
-  np: 'अर्को प्रश्न टाइप गर्नुहोस् →',
 }
 
 export function CategoryView({ category, items, loading, language, onSelectQuestion, onOpenChat }: Props) {

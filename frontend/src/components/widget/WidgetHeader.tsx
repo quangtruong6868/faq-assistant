@@ -16,8 +16,6 @@ const LANGUAGES: Language[] = ['vi', 'jp']
 const SUBTITLE: Record<Language, string> = {
   vi: 'Tư vấn nhân lực & hỗ trợ nội bộ',
   jp: '人材紹介・採用・社内サポート',
-  en: 'HR Consulting & Internal Support',
-  np: 'एचआर परामर्श र आन्तरिक समर्थन',
 }
 
 export function WidgetHeader({ language, onLanguageChange, onMinimize, onClose, onBack, showBack, title }: Props) {
